@@ -1,0 +1,143 @@
+<div class="signup-page">
+
+  <!-- SOL PANEL -->
+  <div class="left-panel">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div class="brand-name">Data<span>Pulse</span></div>
+    </div>
+
+    <h1>Alışverişin<br>yeni adresi.</h1>
+    <p>Binlerce ürün, güvenli ödeme ve hızlı teslimat ile tanışın. Ücretsiz hesap oluşturun.</p>
+
+    <div class="features">
+      <div class="feature-item">
+        <div class="feature-icon">🚀</div>
+        <span class="feature-text">Aynı gün kargo seçeneği</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🔒</div>
+        <span class="feature-text">256-bit SSL ile güvenli alışveriş</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">↩️</div>
+        <span class="feature-text">30 gün koşulsuz iade garantisi</span>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">💎</div>
+        <span class="feature-text">Premium üyelik avantajları</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAĞ PANEL -->
+  <div class="right-panel">
+
+    @if (successMessage) {
+      <div class="success-screen">
+        <div class="success-circle">✓</div>
+        <h2>Hoş Geldiniz!</h2>
+        <p>Hesabınız başarıyla oluşturuldu. Artık binlerce ürüne erişebilirsiniz.</p>
+        <div class="redirect-note">Giriş sayfasına yönlendiriliyorsunuz...</div>
+      </div>
+    } @else {
+
+      <div class="form-header">
+        <h2>Hesap Oluştur</h2>
+        <p>Zaten üye misiniz? <a routerLink="/login">Giriş yapın</a></p>
+      </div>
+
+      <form (ngSubmit)="onSignup()">
+        <div class="form-grid">
+
+          <!-- Ad Soyad -->
+          <div class="field">
+            <label>Ad Soyad <span class="req">*</span></label>
+            <input type="text" name="fullName" [(ngModel)]="form.fullName"
+                   placeholder="Adınız Soyadınız" required
+                   [class.error-input]="errorMessage && !form.fullName">
+          </div>
+
+          <!-- E-posta -->
+          <div class="field">
+            <label>E-posta Adresi <span class="req">*</span></label>
+            <input type="email" name="email" [(ngModel)]="form.email"
+                   placeholder="ornek@mail.com" required
+                   [class.error-input]="errorMessage && !form.email">
+          </div>
+
+          <!-- Şifre -->
+          <div class="field">
+            <label>Şifre <span class="req">*</span></label>
+            <input type="password" name="password" [(ngModel)]="form.password"
+                   placeholder="En az 6 karakter" required
+                   (input)="calcStrength()">
+            <div class="password-strength">
+              <div class="strength-bar" [class.weak]="strength>=1" [class.medium]="strength>=2" [class.strong]="strength>=3"></div>
+              <div class="strength-bar" [class.medium]="strength>=2" [class.strong]="strength>=3"></div>
+              <div class="strength-bar" [class.strong]="strength>=3"></div>
+            </div>
+          </div>
+
+          <!-- Şifre Tekrar -->
+          <div class="field">
+            <label>Şifre Tekrar <span class="req">*</span></label>
+            <input type="password" name="confirmPassword" [(ngModel)]="form.confirmPassword"
+                   placeholder="Şifrenizi tekrar girin" required>
+          </div>
+
+          <!-- Cinsiyet -->
+          <div class="field">
+            <label>Cinsiyet</label>
+            <select name="gender" [(ngModel)]="form.gender">
+              <option value="">Belirtmek istemiyorum</option>
+              <option value="Male">Erkek</option>
+              <option value="Female">Kadın</option>
+            </select>
+          </div>
+
+          <!-- Yaş -->
+          <div class="field">
+            <label>Yaş</label>
+            <input type="number" name="age" [(ngModel)]="form.age"
+                   placeholder="Örn: 25" min="13" max="120">
+          </div>
+
+          <!-- Şehir -->
+          <div class="field">
+            <label>Şehir</label>
+            <input type="text" name="city" [(ngModel)]="form.city"
+                   placeholder="Örn: İstanbul">
+          </div>
+
+          <!-- Ülke -->
+          <div class="field">
+            <label>Ülke</label>
+            <input type="text" name="country" [(ngModel)]="form.country"
+                   placeholder="Örn: Türkiye">
+          </div>
+
+          <!-- Hata -->
+          @if (errorMessage) {
+            <div class="error-box">
+              ⚠️ {{ errorMessage }}
+            </div>
+          }
+
+          <!-- Kayıt Butonu -->
+          <button type="submit" class="submit-btn" [disabled]="loading">
+            @if (loading) { ⏳ Kayıt Yapılıyor... } @else { Ücretsiz Hesap Oluştur }
+          </button>
+
+          <div class="divider"><span>veya</span></div>
+
+          <div class="login-link">
+            Zaten hesabınız var mı? <a routerLink="/login">Giriş Yapın</a>
+          </div>
+
+        </div>
+      </form>
+    }
+  </div>
+
+</div>

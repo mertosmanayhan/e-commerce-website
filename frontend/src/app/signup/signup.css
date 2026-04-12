@@ -1,0 +1,228 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.signup-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* ── SOL PANEL ─────────────────────────────────── */
+.left-panel {
+  background: linear-gradient(150deg, #6c3de8 0%, #8c52ff 50%, #a855f7 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 60px 56px;
+  position: relative;
+  overflow: hidden;
+}
+
+.left-panel::before {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%;
+  top: -100px; right: -100px;
+}
+.left-panel::after {
+  content: '';
+  position: absolute;
+  width: 280px; height: 280px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+  bottom: -60px; left: -60px;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 52px; }
+.brand-icon {
+  width: 44px; height: 44px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.brand-name { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+.brand-name span { color: rgba(255,255,255,0.7); }
+
+.left-panel h1 {
+  font-size: 36px; font-weight: 800;
+  color: #fff; line-height: 1.25;
+  margin-bottom: 16px; position: relative; z-index: 1;
+}
+.left-panel p {
+  font-size: 16px; color: rgba(255,255,255,0.78);
+  line-height: 1.7; margin-bottom: 44px;
+  position: relative; z-index: 1; max-width: 340px;
+}
+
+.features { display: flex; flex-direction: column; gap: 18px; position: relative; z-index: 1; }
+.feature-item { display: flex; align-items: center; gap: 14px; }
+.feature-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.feature-text { color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 500; }
+
+/* ── SAĞ PANEL ─────────────────────────────────── */
+.right-panel {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px 56px;
+  overflow-y: auto;
+}
+
+.form-header { margin-bottom: 28px; }
+.form-header h2 { font-size: 26px; font-weight: 800; color: #1a1a2e; margin-bottom: 6px; }
+.form-header p { font-size: 14px; color: #6b7280; }
+.form-header p a { color: #8c52ff; font-weight: 600; text-decoration: none; }
+.form-header p a:hover { text-decoration: underline; }
+
+/* ── FORM ─────────────────────────────────────── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.form-grid .full { grid-column: 1 / -1; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label {
+  font-size: 13px; font-weight: 600; color: #374151;
+  display: flex; align-items: center; gap: 4px;
+}
+.field label .req { color: #ef4444; }
+
+.field input,
+.field select {
+  height: 46px;
+  padding: 0 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #1f2937;
+  background: #f9fafb;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  font-family: inherit;
+  width: 100%;
+}
+.field input::placeholder { color: #9ca3af; }
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: #8c52ff;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(140,82,255,0.12);
+}
+.field input.error-input { border-color: #ef4444; background: #fff5f5; }
+
+.field select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 38px;
+}
+
+/* Şifre gücü */
+.password-strength { margin-top: 6px; display: flex; gap: 4px; }
+.strength-bar {
+  height: 3px; flex: 1; border-radius: 2px;
+  background: #e5e7eb; transition: background 0.3s;
+}
+.strength-bar.weak   { background: #ef4444; }
+.strength-bar.medium { background: #f59e0b; }
+.strength-bar.strong { background: #10b981; }
+
+/* Hata mesajı */
+.error-box {
+  grid-column: 1 / -1;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #dc2626;
+  font-weight: 500;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* Kayıt butonu */
+.submit-btn {
+  grid-column: 1 / -1;
+  height: 50px;
+  background: linear-gradient(135deg, #7c3aed, #8c52ff);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  letter-spacing: 0.2px;
+  margin-top: 4px;
+}
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(140,82,255,0.4);
+}
+.submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* Divider */
+.divider {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 12px; margin: 4px 0;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 1px; background: #e5e7eb;
+}
+.divider span { font-size: 12px; color: #9ca3af; font-weight: 500; white-space: nowrap; }
+
+/* Giriş linki */
+.login-link {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 14px; color: #6b7280;
+}
+.login-link a { color: #8c52ff; font-weight: 700; text-decoration: none; }
+.login-link a:hover { text-decoration: underline; }
+
+/* ── BAŞARI EKRANI ─────────────────────────────── */
+.success-screen {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; gap: 16px; padding: 20px 0;
+}
+.success-circle {
+  width: 88px; height: 88px; border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #34d399);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px;
+  box-shadow: 0 8px 24px rgba(16,185,129,0.3);
+}
+.success-screen h2 { font-size: 26px; font-weight: 800; color: #1a1a2e; }
+.success-screen p { font-size: 15px; color: #6b7280; max-width: 320px; line-height: 1.6; }
+.success-screen .redirect-note {
+  font-size: 13px; color: #8c52ff; font-weight: 600;
+  background: #f5f3ff; padding: 10px 20px; border-radius: 8px;
+  border: 1px solid #ede9fe;
+}
+
+/* ── RESPONSIVE ────────────────────────────────── */
+@media (max-width: 900px) {
+  .signup-page { grid-template-columns: 1fr; }
+  .left-panel { display: none; }
+  .right-panel { padding: 40px 28px; min-height: 100vh; }
+}
+
+@media (max-width: 480px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .form-grid .full { grid-column: 1; }
+  .submit-btn { grid-column: 1; }
+  .divider { grid-column: 1; }
+  .login-link { grid-column: 1; }
+  .error-box { grid-column: 1; }
+}

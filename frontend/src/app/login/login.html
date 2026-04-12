@@ -1,0 +1,50 @@
+<div class="login-page">
+  <div class="login-card">
+    <div class="logo">
+      <span class="highlight">Data</span>Pulse
+    </div>
+    <h2>Tekrar Hoş Geldiniz</h2>
+    <p class="subtitle">DataPulse hesabınızla giriş yapın</p>
+
+    @if (loggedOutMessage) {
+      <div class="logout-notice">✅ {{ loggedOutMessage }}</div>
+    }
+
+    <form (ngSubmit)="onLogin()">
+      <div class="input-group">
+        <label>E-posta</label>
+        <input type="email" name="email" [(ngModel)]="loginData.email" placeholder="admin@datapulse.com" required>
+      </div>
+
+      <div class="input-group">
+        <label>Şifre</label>
+        <input type="password" name="password" [(ngModel)]="loginData.password" placeholder="******" required>
+      </div>
+
+      <div class="forgot-pass">
+        <a routerLink="/forgot-password">Şifremi Unuttum</a>
+      </div>
+
+      @if (errorMessage) {
+        <div class="error-text">{{ errorMessage }}</div>
+      }
+
+      <button type="submit" class="login-btn" [disabled]="loading">
+        @if (loading) { Giriş Yapılıyor... } @else { Giriş Yap }
+      </button>
+    </form>
+
+    <div class="divider">
+      <span>veya</span>
+    </div>
+
+    <button class="google-btn">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+      Google ile Devam Et
+    </button>
+
+    <p class="signup-text">
+      Hesabınız yok mu? <a routerLink="/signup">Şimdi Kayıt Ol</a>
+    </p>
+  </div>
+</div>

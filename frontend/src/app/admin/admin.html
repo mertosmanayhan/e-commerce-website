@@ -1,0 +1,243 @@
+<div class="admin-page">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="hl">Data</span>Pulse</div>
+
+    <div class="menu-section">
+      <p class="menu-label">YÖNETİM PANELİ</p>
+      <button class="menu-item" [class.active]="activeTab==='overview'" (click)="activeTab='overview'">
+        <span class="menu-icon">🏠</span> Genel Bakış
+      </button>
+      <button class="menu-item" [class.active]="activeTab==='users'" (click)="activeTab='users'">
+        <span class="menu-icon">👥</span> Kullanıcılar
+      </button>
+      <button class="menu-item" [class.active]="activeTab==='stores'" (click)="activeTab='stores'">
+        <span class="menu-icon">🏪</span> Mağazalar
+      </button>
+      <button class="menu-item" [class.active]="activeTab==='comparison'" (click)="activeTab='comparison'; loadComparison()">
+        <span class="menu-icon">📊</span> Mağaza Karşılaştırma
+      </button>
+      <button class="menu-item" [class.active]="activeTab==='audit'" (click)="activeTab='audit'; loadAuditLog()">
+        <span class="menu-icon">📋</span> Aktivite Logu
+      </button>
+    </div>
+
+    <div class="menu-section">
+      <p class="menu-label">GEZİNME</p>
+      <a routerLink="/dashboard" routerLinkActive="active" class="menu-item">
+        <span class="menu-icon">📊</span> Dashboard
+      </a>
+      <a routerLink="/analytics" routerLinkActive="active" class="menu-item">
+        <span class="menu-icon">📈</span> Analytics
+      </a>
+      <a routerLink="/products"  routerLinkActive="active" class="menu-item">
+        <span class="menu-icon">📦</span> Ürünler
+      </a>
+      <a routerLink="/orders"    routerLinkActive="active" class="menu-item">
+        <span class="menu-icon">🛒</span> Siparişler
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">Çıkış Yap</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+
+    <header class="top-header">
+      <div>
+        <h1>Admin Paneli</h1>
+        <p class="sub">Platformun tamamını buradan yönetebilirsiniz.</p>
+      </div>
+      <div class="profile-area">
+        <span class="badge badge-admin" style="padding:6px 14px;border-radius:20px">ADMIN</span>
+        <div class="avatar">A</div>
+      </div>
+    </header>
+
+    <!-- ── Overview ─────────────────────────────────────── -->
+    @if (activeTab === 'overview') {
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(140,82,255,.1);color:#8c52ff">👥</div>
+          <div><h3>{{ stats.totalUsers }}</h3><p>Toplam Kullanıcı</p></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(39,174,96,.1);color:#27ae60">🏪</div>
+          <div><h3>{{ stats.totalStores }}</h3><p>Toplam Mağaza</p></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(52,152,219,.1);color:#3498db">📦</div>
+          <div><h3>{{ stats.totalOrders }}</h3><p>Toplam Sipariş</p></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(241,196,15,.1);color:#f39c12">💰</div>
+          <div><h3>{{ stats.totalRevenue }}</h3><p>Toplam Gelir</p></div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h3>Hızlı Erişim</h3>
+        <div class="quick-links">
+          <button class="quick-btn" (click)="activeTab='users'">👥 Kullanıcıları Yönet</button>
+          <button class="quick-btn" (click)="activeTab='stores'">🏪 Mağazaları Yönet</button>
+          <a routerLink="/dashboard" class="quick-btn">📊 Analitik Dashboard</a>
+        </div>
+      </div>
+    }
+
+    <!-- ── Users ─────────────────────────────────────────── -->
+    @if (activeTab === 'users') {
+      <div class="section-header">
+        <h2>Kullanıcı Yönetimi</h2>
+        <input class="search-input" [(ngModel)]="userFilter" placeholder="İsim, e-posta veya rol ara...">
+      </div>
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr><th>ID</th><th>Ad Soyad</th><th>E-posta</th><th>Rol</th><th>Durum</th><th>Kayıt</th><th>İşlemler</th></tr>
+          </thead>
+          <tbody>
+            @for (user of filteredUsers; track user.id) {
+              <tr [class.suspended]="!user.enabled">
+                <td>#{{ user.id }}</td>
+                <td>{{ user.fullName }}</td>
+                <td>{{ user.email }}</td>
+                <td><span [class]="'badge ' + roleClass(user.role)">{{ roleLabel(user.role) }}</span></td>
+                <td>
+                  <span class="status-dot" [class.green]="user.enabled" [class.red]="!user.enabled">
+                    {{ user.enabled ? 'Aktif' : 'Askıda' }}
+                  </span>
+                </td>
+                <td>{{ user.createdAt | date:'dd.MM.yyyy' }}</td>
+                <td class="action-cell">
+                  <button class="btn-warn"   (click)="toggleUserSuspend(user)">{{ user.enabled ? 'Askıya Al' : 'Aktifleştir' }}</button>
+                  <button class="btn-danger" (click)="deleteUser(user)">Sil</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="empty-row">Kullanıcı bulunamadı.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- ── Stores ─────────────────────────────────────────── -->
+    @if (activeTab === 'stores') {
+      <div class="section-header">
+        <h2>Mağaza Yönetimi</h2>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr><th>ID</th><th>Mağaza Adı</th><th>Sahibi</th><th>Durum</th><th>Kuruluş</th><th>İşlem</th></tr>
+          </thead>
+          <tbody>
+            @for (store of stores; track store.id) {
+              <tr>
+                <td>#{{ store.id }}</td>
+                <td>{{ store.name }}</td>
+                <td>{{ store.ownerName ?? store.owner?.fullName ?? '-' }}</td>
+                <td>
+                  <span class="status-dot" [class.green]="store.open" [class.red]="!store.open">
+                    {{ store.open ? 'Açık' : 'Kapalı' }}
+                  </span>
+                </td>
+                <td>{{ store.createdAt | date:'dd.MM.yyyy' }}</td>
+                <td><button class="btn-toggle" (click)="toggleStore(store)">{{ store.open ? 'Kapat' : 'Aç' }}</button></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="empty-row">Mağaza bulunamadı.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- ── Comparison ─────────────────────────────────────── -->
+    @if (activeTab === 'comparison') {
+      <div class="section-header">
+        <h2>Mağaza Karşılaştırma</h2>
+      </div>
+
+      @if (loadingComparison) {
+        <div class="loading-row"><div class="spinner"></div><span>Yükleniyor...</span></div>
+      } @else if (comparisonError) {
+        <div class="empty-row-box" style="color:#e74c3c">{{ comparisonError }}</div>
+      } @else if (storeComparison.length === 0 && comparisonLoaded) {
+        <div class="empty-row-box">Karşılaştırılacak mağaza bulunamadı.</div>
+      } @else {
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr><th>Mağaza Adı</th><th>Ürün Sayısı</th><th>Durum</th></tr>
+            </thead>
+            <tbody>
+              @for (s of storeComparison; track s.name) {
+                <tr>
+                  <td>{{ s.name }}</td>
+                  <td>{{ s.products }}</td>
+                  <td>
+                    <span class="status-dot" [class.green]="s.active" [class.red]="!s.active">
+                      {{ s.active ? 'Aktif' : 'Pasif' }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="comparison-bars">
+          @for (s of storeComparison; track s.name) {
+            <div class="bar-row">
+              <span class="bar-label">{{ s.name }}</span>
+              <div class="bar-track">
+                <div class="bar-fill"
+                  [style.width]="(storeComparison.length ? (s.products / maxProducts * 100) : 0) + '%'">
+                </div>
+              </div>
+              <span class="bar-val">{{ s.products }}</span>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ── Audit Log ─────────────────────────────────────── -->
+    @if (activeTab === 'audit') {
+      <div class="section-header">
+        <h2>Aktivite Logu</h2>
+        <button class="btn-refresh" (click)="loadAuditLog()">Yenile</button>
+      </div>
+
+      @if (loadingAudit) {
+        <div class="loading-row"><div class="spinner"></div><span>Yükleniyor...</span></div>
+      } @else if (auditError) {
+        <div class="empty-row-box" style="color:#e74c3c">{{ auditError }}</div>
+      } @else if (auditLog.length === 0 && auditLoaded) {
+        <div class="empty-row-box">Aktivite kaydı bulunamadı.</div>
+      } @else {
+        <div class="audit-list">
+          @for (entry of auditLog; track $index) {
+            <div class="audit-item">
+              <div class="audit-icon">{{ entry.icon }}</div>
+              <div class="audit-body">
+                <p class="audit-title">{{ entry.title }}</p>
+                <p class="audit-detail">{{ entry.detail }}</p>
+              </div>
+              <div class="audit-time">{{ entry.time | date:'dd.MM.yyyy HH:mm' }}</div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+  </main>
+</div>

@@ -1,0 +1,168 @@
+<div class="page-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="highlight">Data</span>Pulse</div>
+
+    @if (isIndividual) {
+      <div class="menu-section">
+        <p class="menu-label">ANA MENÜ</p>
+        <a routerLink="/analytics"    routerLinkActive="active" class="menu-item"><span class="menu-icon">📊</span> Harcama Analizim</a>
+        <a routerLink="/products"     routerLinkActive="active" class="menu-item"><span class="menu-icon">🛍️</span> Alışveriş</a>
+        <a routerLink="/orders"       routerLinkActive="active" class="menu-item"><span class="menu-icon">📦</span> Siparişlerim</a>
+        <a routerLink="/shipments"    routerLinkActive="active" class="menu-item"><span class="menu-icon">🚚</span> Kargolarım</a>
+        <a routerLink="/wishlist"     routerLinkActive="active" class="menu-item"><span class="menu-icon">❤️</span> Favorilerim</a>
+        <a routerLink="/reviews-page" routerLinkActive="active" class="menu-item"><span class="menu-icon">⭐</span> Değerlendirmeler</a>
+      </div>
+    } @else {
+      <div class="menu-section">
+        <p class="menu-label">ANA MENÜ</p>
+        <a routerLink="/dashboard"    routerLinkActive="active" class="menu-item"><span class="menu-icon">📊</span> Satış Analitiği</a>
+        <a routerLink="/products"     routerLinkActive="active" class="menu-item"><span class="menu-icon">📦</span> Ürünler</a>
+        <a routerLink="/orders"       routerLinkActive="active" class="menu-item"><span class="menu-icon">🛒</span> Siparişler</a>
+        <a routerLink="/shipments"    routerLinkActive="active" class="menu-item"><span class="menu-icon">🚚</span> Kargolar</a>
+        <a routerLink="/reviews-page" routerLinkActive="active" class="menu-item"><span class="menu-icon">⭐</span> Değerlendirmeler</a>
+        <a routerLink="/store-settings" routerLinkActive="active" class="menu-item"><span class="menu-icon">🏪</span> Mağaza Ayarları</a>
+        @if (isAdmin) {
+          <a routerLink="/customers"  routerLinkActive="active" class="menu-item"><span class="menu-icon">👥</span> Müşteriler</a>
+          <a routerLink="/admin"      routerLinkActive="active" class="menu-item admin-link"><span class="menu-icon">⚙️</span> Admin Paneli</a>
+        }
+      </div>
+    }
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">{{ (user?.fullName ?? 'U')[0] }}</div>
+        <div class="sidebar-user-info">
+          <span class="sidebar-name">{{ user?.fullName?.split(' ')[0] ?? 'Kullanıcı' }}</span>
+          <span class="sidebar-role">{{ user?.role ?? '' }}</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()">Çıkış</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <h1>⭐ Değerlendirmeler</h1>
+        <p class="sub">{{ filtered.length }} değerlendirme</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        @if (isIndividual) {
+          <button class="write-btn" (click)="showWriteForm = !showWriteForm">
+            {{ showWriteForm ? '✕ Kapat' : '✍️ Yorum Yaz' }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Write Review Form -->
+    @if (showWriteForm && isIndividual) {
+      <div class="write-form-card">
+        <h3>Yeni Değerlendirme</h3>
+        @if (submitMsg) { <div class="alert-msg">{{ submitMsg }}</div> }
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ürün</label>
+            <select [(ngModel)]="newReview.productId" class="form-select">
+              <option [ngValue]="null">Ürün seçin...</option>
+              @for (p of products; track p.id) {
+                <option [ngValue]="p.id">{{ p.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Puan</label>
+            <div class="star-picker">
+              @for (i of [1,2,3,4,5]; track i) {
+                <span class="pick-star" [class.active]="i <= newReview.starRating" (click)="newReview.starRating = i">★</span>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Yorumunuz</label>
+          <textarea [(ngModel)]="newReview.reviewText" rows="3" placeholder="Ürün hakkında düşüncelerinizi yazın..." class="form-textarea"></textarea>
+        </div>
+        <button class="submit-btn" (click)="submitReview()" [disabled]="submitting || !newReview.productId">
+          {{ submitting ? 'Gönderiliyor...' : 'Yorum Gönder' }}
+        </button>
+      </div>
+    }
+
+    <!-- Filters -->
+    <div class="filters-bar">
+      <input type="text" [(ngModel)]="searchText" placeholder="Ürün veya kullanıcı ara..." class="search-input">
+      <select [(ngModel)]="filterRating" class="filter-select">
+        <option [value]="0">Tüm Puanlar</option>
+        @for (i of [5,4,3,2,1]; track i) {
+          <option [value]="i">{{ i }} ★</option>
+        }
+      </select>
+    </div>
+
+    @if (loading) {
+      <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+    } @else if (filtered.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">💬</div>
+        <h3>Değerlendirme bulunamadı</h3>
+        <p>Filtre kriterlerini değiştirmeyi deneyin.</p>
+      </div>
+    } @else {
+      <div class="reviews-grid">
+        @for (r of filtered; track r.id) {
+          <div class="review-card">
+            <div class="review-header">
+              <div class="reviewer-avatar">{{ (r.user?.fullName ?? r.userName ?? 'A')[0] }}</div>
+              <div class="reviewer-info">
+                <span class="reviewer-name">{{ r.user?.fullName ?? r.userName ?? 'Anonim' }}</span>
+                <span class="review-date">{{ r.createdAt ? (r.createdAt | date:'dd.MM.yyyy') : '-' }}</span>
+              </div>
+              <div class="stars">
+                @for (s of starsArray(r.starRating ?? r.rating ?? 0); track $index) { <span class="star-filled">★</span> }
+                @for (s of emptyStarsArray(r.starRating ?? r.rating ?? 0); track $index) { <span class="star-empty">★</span> }
+              </div>
+            </div>
+
+            <div class="product-name">📦 {{ r.product?.name ?? r.productName ?? 'Ürün' }}</div>
+            <p class="review-text">{{ r.reviewText ?? r.text ?? '-' }}</p>
+
+            <!-- Corporate response -->
+            @if (r.corporateResponse && respondingId !== r.id) {
+              <div class="corp-response">
+                <span class="corp-label">🏢 Mağaza Yanıtı:</span>
+                <p>{{ r.corporateResponse }}</p>
+              </div>
+            }
+
+            <!-- Respond form -->
+            @if (canRespond && respondingId === r.id) {
+              <div class="respond-form">
+                <textarea [(ngModel)]="responseText" rows="2" placeholder="Yanıtınızı yazın..." class="form-textarea"></textarea>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                  <button class="save-resp-btn" (click)="saveResponse(r.id)" [disabled]="savingResponse">{{ savingResponse ? '...' : 'Kaydet' }}</button>
+                  <button class="cancel-btn" (click)="respondingId = null">İptal</button>
+                </div>
+              </div>
+            }
+
+            <!-- Actions -->
+            @if (canRespond || canDelete) {
+              <div class="card-actions">
+                @if (canRespond && respondingId !== r.id) {
+                  <button class="action-btn respond" (click)="startRespond(r)">💬 Yanıtla</button>
+                }
+                @if (canDelete) {
+                  <button class="action-btn delete" (click)="deleteReview(r.id)">🗑️ Sil</button>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </main>
+</div>

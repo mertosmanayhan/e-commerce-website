@@ -1,0 +1,87 @@
+<div class="orders-page">
+  <div class="orders-container">
+
+    <div class="page-header">
+      <div>
+        <h2>📦 Sipariş Geçmişim</h2>
+        <p class="sub">Toplam {{ totalElements }} sipariş</p>
+      </div>
+      <div class="header-actions">
+        <button class="export-btn" (click)="exportCsv()">⬇️ CSV İndir</button>
+        <button routerLink="/products" class="back-btn">Alışverişe Devam Et</button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+      <input type="text" [(ngModel)]="searchText" placeholder="Sipariş no ara..." class="search-input">
+      <select [(ngModel)]="filterStatus" class="filter-select">
+        <option value="">Tüm Durumlar</option>
+        @for (s of statuses; track s) {
+          <option [value]="s">{{ statusLabel(s) }}</option>
+        }
+      </select>
+    </div>
+
+    @if (loading) {
+      <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+    } @else if (filtered.length === 0) {
+      <div class="empty-state">
+        <div style="font-size:60px;margin-bottom:16px">🛍️</div>
+        <h3>Sipariş bulunamadı</h3>
+        <p style="color:#888">Filtreleri değiştirmeyi deneyin veya yeni alışveriş yapın.</p>
+      </div>
+    } @else {
+      <div class="orders-list">
+        @for (order of filtered; track order.id) {
+          <div class="order-card">
+            <div class="order-header">
+              <div class="order-meta">
+                <span class="order-num">{{ order.orderNumber }}</span>
+                <span class="order-date">{{ order.orderDate | date:'dd.MM.yyyy' }}</span>
+                @if (order.paymentMethod) {
+                  <span class="payment-badge">{{ order.paymentMethod }}</span>
+                }
+              </div>
+              <span class="status-badge" [class]="statusClass(order.status)">{{ statusLabel(order.status) }}</span>
+            </div>
+
+            <div class="order-items">
+              @for (item of (order.items ?? []); track $index) {
+                <div class="item-row">
+                  <div class="item-img">
+                    @if (item.imageUrl) {
+                      <img [src]="item.imageUrl" [alt]="item.productName">
+                    } @else {
+                      <span>📦</span>
+                    }
+                  </div>
+                  <div class="item-info">
+                    <h4>{{ item.productName }}</h4>
+                    <span>Adet: {{ item.quantity }}</span>
+                  </div>
+                  <div class="item-price">${{ (item.unitPrice * item.quantity).toFixed(2) }}</div>
+                </div>
+              }
+            </div>
+
+            <div class="order-footer">
+              <span class="footer-label">Toplam Tutar</span>
+              <span class="order-total">${{ (order.totalAmount ?? 0).toFixed(2) }}</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Pagination -->
+      @if (totalPages > 1) {
+        <div class="pagination">
+          <button class="page-btn" (click)="prevPage()" [disabled]="page === 0">‹ Önceki</button>
+          <span class="page-info">Sayfa {{ page + 1 }} / {{ totalPages }}</span>
+          <button class="page-btn" (click)="nextPage()" [disabled]="page >= totalPages - 1">Sonraki ›</button>
+        </div>
+      }
+    }
+
+  </div>
+</div>

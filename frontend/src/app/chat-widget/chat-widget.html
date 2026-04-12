@@ -1,0 +1,61 @@
+<div class="chat-widget-container">
+
+  <!-- Chat Window -->
+  @if (isOpen) {
+    <div class="chat-window">
+      <div class="chat-header">
+        <div class="chat-title">
+          <span class="robot-icon">🤖</span>
+          <span>DataPulse AI</span>
+          <span class="online-dot"></span>
+        </div>
+        <button class="close-btn" (click)="toggleChat()">✕</button>
+      </div>
+
+      <div class="chat-messages" #chatScroll>
+        @for (msg of messages; track $index) {
+          <div class="message-wrapper" [class.user-wrapper]="msg.sender === 'user'">
+            <div class="message-bubble"
+                 [class.user-bubble]="msg.sender === 'user'"
+                 [class.ai-bubble]="msg.sender === 'ai'"
+                 [innerHTML]="formatText(msg.text)">
+            </div>
+            @if (msg.sql) {
+              <div class="sql-badge"><span>⚡</span> SQL çalıştırıldı</div>
+            }
+            @if (msg.hasChart) {
+              <div class="chart-badge"><span>📊</span> Grafik oluşturuldu</div>
+            }
+            <div class="message-sender">{{ msg.sender === 'user' ? 'Sen' : 'AI Asistan' }}</div>
+          </div>
+        }
+        @if (loading) {
+          <div class="message-wrapper">
+            <div class="message-bubble ai-bubble loading-bubble">
+              <span class="dot-1">●</span>
+              <span class="dot-2">●</span>
+              <span class="dot-3">●</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="chat-input-area">
+        <input [(ngModel)]="userQuery"
+               (keyup.enter)="sendMessage()"
+               placeholder="E-ticaret verileriniz hakkında sorun..."
+               class="chat-input"
+               [disabled]="loading">
+        <button class="send-btn" (click)="sendMessage()" [disabled]="loading || !userQuery.trim()">
+          ➤
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Trigger Button -->
+  <button class="chat-trigger-btn" (click)="toggleChat()" [class.open-state]="isOpen">
+    <span class="trigger-icon">{{ isOpen ? '✕' : '💬' }}</span>
+  </button>
+
+</div>

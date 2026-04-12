@@ -1,0 +1,233 @@
+<div class="checkout-page">
+
+  <!-- ── BAŞARI EKRANI ─────────────────────────────────── -->
+  @if (step === 'success') {
+    <div class="success-screen">
+      <div class="success-animation">
+        <div class="checkmark-circle">
+          <div class="checkmark"></div>
+        </div>
+      </div>
+      <h2>Siparişiniz Alındı!</h2>
+      <p class="order-num">Sipariş No: <strong>{{ orderNumber }}</strong></p>
+      <p class="success-sub">Siparişiniz onaylandı. Kargoya verildiğinde e-posta ile bilgilendirileceksiniz.</p>
+      <div class="success-actions">
+        <a routerLink="/orders" class="btn-primary">Siparişlerimi Gör</a>
+        <a routerLink="/products" class="btn-outline">Alışverişe Devam Et</a>
+      </div>
+      <p class="redirect-note">Siparişler sayfasına yönlendiriliyorsunuz...</p>
+    </div>
+  }
+
+  <!-- ── ANA CHECKOUT ──────────────────────────────────── -->
+  @if (step !== 'success') {
+    <div class="checkout-wrapper">
+
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <a routerLink="/cart" class="crumb">Sepet</a>
+        <span class="crumb-sep">›</span>
+        <span class="crumb" [class.crumb-active]="step === 'shipping'">Teslimat</span>
+        <span class="crumb-sep">›</span>
+        <span class="crumb" [class.crumb-active]="step === 'payment'">Ödeme</span>
+      </div>
+
+      <div class="checkout-grid">
+
+        <!-- ── SOL: FORMLAR ── -->
+        <div class="form-col">
+
+          <!-- ADIM 1: TESLİMAT -->
+          @if (step === 'shipping') {
+            <div class="step-card">
+              <div class="step-header">
+                <div class="step-num">1</div>
+                <h2>Teslimat Bilgileri</h2>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="field">
+                  <label>Ad Soyad *</label>
+                  <input type="text" [(ngModel)]="shipping.fullName" placeholder="Mert Ayhan">
+                </div>
+                <div class="field">
+                  <label>E-posta *</label>
+                  <input type="email" [(ngModel)]="shipping.email" placeholder="ornek@email.com">
+                </div>
+                <div class="field">
+                  <label>Telefon</label>
+                  <input type="tel" [(ngModel)]="shipping.phone" placeholder="+90 5xx xxx xx xx">
+                </div>
+                <div class="field">
+                  <label>Şehir *</label>
+                  <input type="text" [(ngModel)]="shipping.city" placeholder="İstanbul">
+                </div>
+                <div class="field field-full">
+                  <label>Açık Adres *</label>
+                  <input type="text" [(ngModel)]="shipping.address" placeholder="Mahalle, cadde, sokak, bina no, daire no">
+                </div>
+                <div class="field">
+                  <label>Posta Kodu</label>
+                  <input type="text" [(ngModel)]="shipping.zipCode" placeholder="34000">
+                </div>
+                <div class="field">
+                  <label>Ülke</label>
+                  <select [(ngModel)]="shipping.country">
+                    @for (c of countries; track c) {
+                      <option [value]="c">{{ c }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              @if (errorMessage) {
+                <div class="error-box">{{ errorMessage }}</div>
+              }
+
+              <button class="btn-next" (click)="goToPayment()">
+                Ödemeye Geç <span class="arrow">→</span>
+              </button>
+            </div>
+          }
+
+          <!-- ADIM 2: ÖDEME -->
+          @if (step === 'payment') {
+            <div class="step-card">
+              <div class="step-header">
+                <div class="step-num">2</div>
+                <h2>Ödeme Yöntemi</h2>
+              </div>
+
+              <!-- Ödeme Yöntemi Seçimi -->
+              <div class="payment-methods">
+                <label class="method-option" [class.selected]="paymentMethod === 'card'" (click)="paymentMethod='card'; onPaymentMethodChange()">
+                  <div class="method-radio">
+                    <div class="radio-dot" [class.active]="paymentMethod === 'card'"></div>
+                  </div>
+                  <div class="method-info">
+                    <span class="method-title">Kredi / Banka Kartı</span>
+                    <span class="method-sub">Stripe ile güvenli ödeme</span>
+                  </div>
+                  <div class="method-logos">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" class="card-logo">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="MC" class="card-logo">
+                  </div>
+                </label>
+
+                <label class="method-option" [class.selected]="paymentMethod === 'cash'" (click)="paymentMethod='cash'; onPaymentMethodChange()">
+                  <div class="method-radio">
+                    <div class="radio-dot" [class.active]="paymentMethod === 'cash'"></div>
+                  </div>
+                  <div class="method-info">
+                    <span class="method-title">Kapıda Ödeme</span>
+                    <span class="method-sub">Nakit veya kart ile kapıda öde</span>
+                  </div>
+                  <span class="method-icon-right">🚪</span>
+                </label>
+              </div>
+
+              <!-- Stripe Kart Formu -->
+              @if (paymentMethod === 'card') {
+                <div class="stripe-card-wrapper">
+                  <div class="stripe-header">
+                    <span>Kart Bilgileri</span>
+                    <div class="secure-badge">🔒 SSL</div>
+                  </div>
+                  <div id="card-element" class="stripe-element"></div>
+                  <p class="stripe-test-hint">
+                    Test kartı: <strong>4242 4242 4242 4242</strong> — Son kullanma: herhangi gelecek tarih — CVV: herhangi 3 hane
+                  </p>
+                </div>
+              }
+
+              @if (paymentMethod === 'cash') {
+                <div class="cash-info">
+                  <span class="cash-icon">ℹ️</span>
+                  <p>Kapıda ödeme seçeneğinde teslimat esnasında nakit veya kartla ödeme yapabilirsiniz. Ek 0 ₺ hizmet bedeli uygulanmaz.</p>
+                </div>
+              }
+
+              @if (errorMessage) {
+                <div class="error-box">{{ errorMessage }}</div>
+              }
+
+              <div class="payment-actions">
+                <button class="btn-back" (click)="step = 'shipping'">← Geri</button>
+                <button class="btn-pay" (click)="processPayment()" [disabled]="isProcessing">
+                  @if (isProcessing) {
+                    <span class="spinner-inline"></span> İşleniyor...
+                  } @else {
+                    🔒 {{ grandTotal | currency:'USD' }} Öde
+                  }
+                </button>
+              </div>
+            </div>
+          }
+
+        </div>
+
+        <!-- ── SAĞ: SİPARİŞ ÖZETİ ── -->
+        <div class="summary-col">
+          <div class="summary-card">
+            <h3 class="summary-title">Sipariş Özeti</h3>
+            <span class="item-count">{{ itemCount }} ürün</span>
+
+            <div class="summary-items">
+              @for (item of cartItems; track item.product.id) {
+                <div class="summary-item">
+                  <div class="item-img-wrap">
+                    <img [src]="item.product.imageUrl || 'https://picsum.photos/seed/' + item.product.id + '/60/60'"
+                         [alt]="item.product.name" class="item-img">
+                    <span class="item-qty-badge">{{ item.quantity }}</span>
+                  </div>
+                  <div class="item-details">
+                    <p class="item-name">{{ item.product.name }}</p>
+                    <p class="item-price">${{ (item.product.price).toFixed(2) }}</p>
+                  </div>
+                  <span class="item-total">${{ (item.product.price * item.quantity).toFixed(2) }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="summary-lines">
+              <div class="summary-line">
+                <span>Ara Toplam</span>
+                <span>${{ subtotal.toFixed(2) }}</span>
+              </div>
+              <div class="summary-line">
+                <span>Kargo</span>
+                <span [class.free]="shipping_cost === 0">
+                  {{ shipping_cost === 0 ? 'Ücretsiz' : '$' + shipping_cost.toFixed(2) }}
+                </span>
+              </div>
+              <div class="summary-line">
+                <span>Vergi (%8)</span>
+                <span>${{ tax.toFixed(2) }}</span>
+              </div>
+              @if (shipping_cost === 0) {
+                <div class="free-shipping-badge">🎉 Ücretsiz kargo kazandınız!</div>
+              } @else {
+                <div class="free-shipping-hint">
+                  ${{ (100 - subtotal).toFixed(2) }} daha ekleyin → Ücretsiz kargo
+                </div>
+              }
+            </div>
+
+            <div class="summary-total">
+              <span>Toplam</span>
+              <span class="total-val">${{ grandTotal.toFixed(2) }}</span>
+            </div>
+
+            <div class="trust-badges">
+              <div class="trust-item"><span>🔒</span> 256-bit SSL</div>
+              <div class="trust-item"><span>↩️</span> 30 gün iade</div>
+              <div class="trust-item"><span>🚚</span> Hızlı teslimat</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  }
+
+</div>

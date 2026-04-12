@@ -1,0 +1,108 @@
+<div class="page-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="highlight">Data</span>Pulse</div>
+
+    <div class="menu-section">
+      <p class="menu-label">ANA MENÜ</p>
+      <a routerLink="/dashboard"    routerLinkActive="active" class="menu-item"><span class="menu-icon">🏠</span> Dashboard</a>
+      <a routerLink="/analytics"    routerLinkActive="active" class="menu-item"><span class="menu-icon">📊</span> Analytics</a>
+      <a routerLink="/ai-assistant" routerLinkActive="active" class="menu-item"><span class="menu-icon">🤖</span> AI Assistant <span class="menu-badge">New</span></a>
+      <a routerLink="/orders"       routerLinkActive="active" class="menu-item"><span class="menu-icon">🛒</span> Siparişler</a>
+      <a routerLink="/products"     routerLinkActive="active" class="menu-item"><span class="menu-icon">📦</span> Ürünler</a>
+    </div>
+
+    <div class="menu-section">
+      <p class="menu-label">YÖNETİM</p>
+      @if (isAdmin) {
+        <a routerLink="/customers"     routerLinkActive="active" class="menu-item"><span class="menu-icon">👥</span> Müşteriler</a>
+        <a routerLink="/store-settings" routerLinkActive="active" class="menu-item"><span class="menu-icon">🏪</span> Mağaza Ayarları</a>
+      }
+      <a routerLink="/shipments"    routerLinkActive="active" class="menu-item"><span class="menu-icon">🚚</span> Kargolar</a>
+      <a routerLink="/reviews-page" routerLinkActive="active" class="menu-item"><span class="menu-icon">⭐</span> Değerlendirmeler</a>
+      @if (isAdmin) {
+        <a routerLink="/admin" routerLinkActive="active" class="menu-item admin-link"><span class="menu-icon">⚙️</span> Admin Paneli</a>
+      }
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">{{ (user?.fullName ?? 'U')[0] }}</div>
+        <div class="sidebar-user-info">
+          <span class="sidebar-name">{{ user?.fullName?.split(' ')[0] ?? 'Kullanıcı' }}</span>
+          <span class="sidebar-role">{{ user?.role ?? '' }}</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()">Çıkış</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <h1>🤖 AI Assistant</h1>
+        <p class="sub">Doğal dille e-ticaret verilerinizi sorgulayın (Text2SQL)</p>
+      </div>
+    </div>
+
+    <div class="chat-layout">
+
+      <!-- Sol: Sohbet -->
+      <div class="chat-panel">
+        <div class="messages-area" #chatScroll>
+          @for (msg of messages; track $index) {
+            <div class="message-row" [class.user-row]="msg.sender === 'user'">
+              <div class="message-bubble" [class.user-bubble]="msg.sender === 'user'" [class.ai-bubble]="msg.sender === 'ai'">
+                <div [innerHTML]="formatText(msg.text)"></div>
+                @if (msg.sql) {
+                  <div class="sql-block">
+                    <span class="sql-label">SQL</span>
+                    <code>{{ msg.sql }}</code>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+          @if (loading) {
+            <div class="message-row">
+              <div class="ai-bubble message-bubble typing">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="input-area">
+          <input
+            [(ngModel)]="userQuery"
+            (keyup.enter)="sendMessage()"
+            placeholder="Soru sorun... (Enter ile gönderin)"
+            class="chat-input"
+            [disabled]="loading" />
+          <button class="send-btn" (click)="sendMessage()" [disabled]="loading || !userQuery.trim()">
+            Gönder →
+          </button>
+        </div>
+      </div>
+
+      <!-- Sağ: Öneriler -->
+      <div class="suggestions-panel">
+        <h3>Örnek Sorular</h3>
+        <div class="suggestion-list">
+          @for (s of suggestions; track $index) {
+            <button class="suggestion-btn" (click)="useSuggestion(s)">{{ s }}</button>
+          }
+        </div>
+
+        <div class="info-card">
+          <h4>💡 Nasıl çalışır?</h4>
+          <p>Sorunuz otomatik olarak SQL sorgusuna çevrilir ve veritabanından gerçek zamanlı veri çekilir.</p>
+          <p>LangGraph Multi-Agent sistemi ile çalışır.</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>

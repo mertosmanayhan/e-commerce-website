@@ -1,0 +1,60 @@
+.orders-page { min-height: 100vh; background: #f8f9fa; padding: 40px 20px; font-family: 'Segoe UI', sans-serif; }
+.orders-container { max-width: 960px; margin: 0 auto; }
+
+.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+.page-header h2 { margin: 0 0 4px; color: #2c3e50; font-size: 26px; }
+.sub { margin: 0; color: #888; font-size: 14px; }
+.header-actions { display: flex; gap: 10px; }
+
+.export-btn { background: #27ae60; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: .2s; }
+.export-btn:hover { background: #219a52; }
+.back-btn { background: #fff; border: 1px solid #ddd; padding: 10px 18px; border-radius: 8px; font-weight: 600; color: #555; cursor: pointer; transition: .2s; }
+.back-btn:hover { border-color: #8c52ff; color: #8c52ff; }
+
+.filters-bar { display: flex; gap: 12px; margin-bottom: 20px; }
+.search-input { flex: 1; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
+.search-input:focus { outline: none; border-color: #8c52ff; }
+.filter-select { padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: #fff; cursor: pointer; min-width: 160px; }
+.filter-select:focus { outline: none; border-color: #8c52ff; }
+
+.loading-state { display: flex; flex-direction: column; align-items: center; padding: 80px; color: #888; gap: 16px; }
+.spinner { width: 40px; height: 40px; border: 4px solid #eee; border-top-color: #8c52ff; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state { text-align: center; background: #fff; padding: 60px 20px; border-radius: 16px; border: 1px solid #eaeaea; }
+.empty-state h3 { color: #2c3e50; font-size: 22px; margin: 0 0 10px; }
+
+.orders-list { display: flex; flex-direction: column; gap: 16px; }
+
+.order-card { background: #fff; border-radius: 12px; border: 1px solid #eaeaea; overflow: hidden; }
+.order-header { background: #fafafa; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eaeaea; gap: 12px; }
+.order-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.order-num { font-weight: 700; color: #333; font-size: 14px; }
+.order-date { font-size: 13px; color: #888; }
+.payment-badge { background: #f0ebff; color: #8c52ff; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+
+.status-badge { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.status-pending   { background: rgba(243,156,18,.12);  color: #b7770d; }
+.status-confirmed { background: rgba(52,152,219,.12);  color: #1a6fa8; }
+.status-shipped   { background: rgba(140,82,255,.12);  color: #6d28d9; }
+.status-delivered { background: rgba(39,174,96,.12);   color: #166534; }
+.status-cancelled { background: rgba(231,76,60,.12);   color: #c0392b; }
+
+.order-items { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+.item-row { display: flex; align-items: center; gap: 14px; padding-bottom: 12px; border-bottom: 1px solid #f5f5f5; }
+.item-row:last-child { border-bottom: none; padding-bottom: 0; }
+.item-img { width: 54px; height: 54px; border-radius: 8px; overflow: hidden; background: #f0f0f0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.item-img img { width: 100%; height: 100%; object-fit: cover; }
+.item-info h4 { margin: 0 0 4px; color: #333; font-size: 14px; font-weight: 600; }
+.item-info span { font-size: 12px; color: #888; }
+.item-price { margin-left: auto; font-weight: 700; color: #27ae60; font-size: 15px; }
+
+.order-footer { padding: 12px 20px; background: #fafafa; border-top: 1px solid #eaeaea; display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+.footer-label { font-size: 14px; color: #666; }
+.order-total { font-size: 20px; font-weight: 900; color: #8c52ff; }
+
+.pagination { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 24px; }
+.page-btn { padding: 8px 20px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; font-weight: 600; cursor: pointer; transition: .2s; }
+.page-btn:hover:not(:disabled) { border-color: #8c52ff; color: #8c52ff; }
+.page-btn:disabled { opacity: .4; cursor: not-allowed; }
+.page-info { font-size: 14px; color: #666; font-weight: 600; }

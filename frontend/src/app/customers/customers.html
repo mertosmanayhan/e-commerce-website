@@ -1,0 +1,105 @@
+<div class="page-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="highlight">Data</span>Pulse</div>
+
+    <div class="menu-section">
+      <p class="menu-label">ANA MENÜ</p>
+      <a routerLink="/dashboard"    routerLinkActive="active" class="menu-item"><span class="menu-icon">🏠</span> Dashboard</a>
+      <a routerLink="/analytics"    routerLinkActive="active" class="menu-item"><span class="menu-icon">📊</span> Analytics</a>
+      <a routerLink="/ai-assistant" routerLinkActive="active" class="menu-item"><span class="menu-icon">🤖</span> AI Assistant <span class="menu-badge">New</span></a>
+      <a routerLink="/orders"       routerLinkActive="active" class="menu-item"><span class="menu-icon">🛒</span> Siparişler</a>
+      <a routerLink="/products"     routerLinkActive="active" class="menu-item"><span class="menu-icon">📦</span> Ürünler</a>
+    </div>
+
+    <div class="menu-section">
+      <p class="menu-label">YÖNETİM</p>
+      @if (isAdmin) {
+        <a routerLink="/customers"      routerLinkActive="active" class="menu-item"><span class="menu-icon">👥</span> Müşteriler</a>
+        <a routerLink="/store-settings" routerLinkActive="active" class="menu-item"><span class="menu-icon">🏪</span> Mağaza Ayarları</a>
+      }
+      <a routerLink="/shipments"    routerLinkActive="active" class="menu-item"><span class="menu-icon">🚚</span> Kargolar</a>
+      <a routerLink="/reviews-page" routerLinkActive="active" class="menu-item"><span class="menu-icon">⭐</span> Değerlendirmeler</a>
+      @if (isAdmin) {
+        <a routerLink="/admin" routerLinkActive="active" class="menu-item admin-link"><span class="menu-icon">⚙️</span> Admin Paneli</a>
+      }
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">{{ (user?.fullName ?? 'U')[0] }}</div>
+        <div class="sidebar-user-info">
+          <span class="sidebar-name">{{ user?.fullName?.split(' ')[0] ?? 'Kullanıcı' }}</span>
+          <span class="sidebar-role">{{ user?.role ?? '' }}</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()">Çıkış</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <h1>👥 Müşteriler</h1>
+        <p class="sub">Kayıtlı kullanıcıları ve rollerini görüntüleyin</p>
+      </div>
+      <div class="header-stats">
+        <span class="stat-chip">Toplam: {{ users.length }}</span>
+      </div>
+    </div>
+
+    <!-- Filtreler -->
+    <div class="filter-bar">
+      <input
+        [(ngModel)]="search"
+        (input)="applyFilter()"
+        placeholder="İsim veya e-posta ara..."
+        class="search-input" />
+      <select [(ngModel)]="roleFilter" (change)="applyFilter()" class="role-select">
+        <option value="">Tüm Roller</option>
+        <option value="ADMIN">Admin</option>
+        <option value="CORPORATE">Corporate</option>
+        <option value="INDIVIDUAL">Individual</option>
+      </select>
+    </div>
+
+    @if (loading) {
+      <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+    } @else {
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Ad Soyad</th>
+              <th>E-posta</th>
+              <th>Rol</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (filtered.length === 0) {
+              <tr><td colspan="5" class="empty-row">Kullanıcı bulunamadı</td></tr>
+            }
+            @for (u of filtered; track u.id; let i = $index) {
+              <tr>
+                <td class="id-cell">{{ i + 1 }}</td>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar">{{ (u.fullName ?? 'U')[0] }}</div>
+                    <span>{{ u.fullName ?? '-' }}</span>
+                  </div>
+                </td>
+                <td class="email-cell">{{ u.email ?? '-' }}</td>
+                <td><span class="role-badge" [class]="getRoleBadge(u.role)">{{ u.role }}</span></td>
+                <td><span class="status-active">Aktif</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </main>
+</div>

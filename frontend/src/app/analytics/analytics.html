@@ -1,0 +1,114 @@
+<div class="analytics-page">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="hl">Data</span>Pulse</div>
+
+    <div class="menu-section">
+      <p class="menu-label">ANA MENÜ</p>
+      <a routerLink="/analytics"    routerLinkActive="active" class="menu-item">
+        <span class="menu-icon">📊</span> Harcama Analizim
+      </a>
+      <a routerLink="/products"     routerLinkActive="active" class="menu-item">
+        <span class="menu-icon">🛍️</span> Alışveriş
+      </a>
+      <a routerLink="/orders"       routerLinkActive="active" class="menu-item">
+        <span class="menu-icon">📦</span> Siparişlerim
+      </a>
+      <a routerLink="/shipments"    routerLinkActive="active" class="menu-item">
+        <span class="menu-icon">🚚</span> Kargolarım
+      </a>
+      <a routerLink="/wishlist"     routerLinkActive="active" class="menu-item">
+        <span class="menu-icon">❤️</span> Favorilerim
+      </a>
+      <a routerLink="/cart"         routerLinkActive="active" class="menu-item">
+        <span class="menu-icon">🛒</span> Sepetim
+      </a>
+      <a routerLink="/ai-assistant" routerLinkActive="active" class="menu-item">
+        <span class="menu-icon">🤖</span> AI Asistan
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">{{ (user?.fullName ?? 'U')[0] }}</div>
+        <div class="sidebar-user-info">
+          <span class="sidebar-name">{{ user?.fullName?.split(' ')[0] ?? 'Kullanıcı' }}</span>
+          <span class="sidebar-role">{{ roleLabel }}</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()">Çıkış</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+
+    <header class="top-header">
+      <div>
+        <h1>{{ (isCorporate || isAdmin) ? 'İş Analitiği 📊' : 'Harcama Analizlerim 📈' }}</h1>
+        <p class="sub">{{ (isCorporate || isAdmin) ? 'Satış, gelir ve müşteri verilerini inceleyin.' : 'Alışveriş alışkanlıklarınızı ve harcamalarınızı inceleyin.' }}</p>
+      </div>
+      <div class="profile-area">
+        <span style="color:#555;font-weight:600">{{ user?.fullName ?? 'Kullanıcı' }}</span>
+        <div class="avatar">{{ (user?.fullName ?? 'U')[0] }}</div>
+      </div>
+    </header>
+
+    @if (loading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Veriler yükleniyor...</p>
+      </div>
+    } @else {
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(140,82,255,.1);color:#8c52ff">💰</div>
+          <div><h3>{{ kpi.totalSpend }}</h3><p>{{ isCorporate || isAdmin ? 'Toplam Gelir' : 'Toplam Harcama' }}</p></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(52,152,219,.1);color:#3498db">📦</div>
+          <div><h3>{{ kpi.totalOrders }}</h3><p>Toplam Sipariş</p></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(39,174,96,.1);color:#27ae60">🧾</div>
+          <div><h3>{{ kpi.avgOrderValue }}</h3><p>{{ isCorporate || isAdmin ? 'Büyüme Oranı' : 'Ortalama Sipariş' }}</p></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(241,196,15,.1);color:#f39c12">⭐</div>
+          <div><h3>{{ kpi.favCategory }}</h3><p>{{ isCorporate || isAdmin ? 'Müşteri Sayısı' : 'Favori Kategori' }}</p></div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-card wide">
+          <h3>Harcama Trendi (Son 30 Gün)</h3>
+          <div class="chart-area">
+            <canvas baseChart [data]="trendChartData" [options]="trendChartOptions" [type]="'line'"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Kategori Dağılımı</h3>
+          <div class="chart-area">
+            <canvas baseChart [data]="categoryChartData" [options]="categoryChartOptions" [type]="'doughnut'"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="quick-actions">
+        <h3>Hızlı Erişim</h3>
+        <div class="actions-row">
+          <a routerLink="/orders"   class="action-btn">📦 Sipariş Geçmişi</a>
+          <a routerLink="/wishlist" class="action-btn">❤️ Favori Ürünler</a>
+          <a routerLink="/products" class="action-btn">🛍️ Alışverişe Devam</a>
+        </div>
+      </div>
+
+    }
+  </main>
+</div>

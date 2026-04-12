@@ -1,0 +1,329 @@
+<!-- Toast Notification -->
+@if (toast.visible) {
+  <div class="toast-notification" [class.toast-success]="toast.type === 'success'" [class.toast-error]="toast.type === 'error'">
+    <span class="toast-icon">{{ toast.type === 'success' ? '✓' : '✕' }}</span>
+    {{ toast.message }}
+  </div>
+}
+
+@if (loading) {
+  <div class="loading-screen">
+    <div class="spinner"></div>
+    <p>Ürün yükleniyor...</p>
+  </div>
+} @else if (product) {
+<div class="page-container">
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a routerLink="/products" class="logo">
+      <span class="highlight">Data</span>Pulse <span class="logo-sub">| Store</span>
+    </a>
+    <div class="nav-actions">
+      <a routerLink="/cart" class="cart-btn">
+        🛒 Sepetim
+        @if (cartCount > 0) {
+          <span class="cart-badge">{{ cartCount }}</span>
+        }
+      </a>
+      @if (!isAuth) {
+        <button class="login-btn" routerLink="/login">Giriş Yap</button>
+      } @else {
+        <span class="welcome-text">Merhaba, {{ currentUser?.fullName?.split(' ')[0] || 'Kullanıcı' }}</span>
+        <button class="logout-btn" (click)="logout()">Çıkış</button>
+      }
+    </div>
+  </nav>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb-bar">
+    <a routerLink="/products">Ana Sayfa</a>
+    <span class="sep">›</span>
+    <a routerLink="/products">{{ product.category }}</a>
+    <span class="sep">›</span>
+    <span class="current">{{ product.name }}</span>
+  </div>
+
+  <!-- Product Hero -->
+  <div class="product-hero">
+
+    <!-- Image Gallery -->
+    <div class="gallery-section">
+      <div class="main-image-wrap">
+        <img [src]="product.imageUrl" [alt]="product.name" class="main-image" />
+        @if (getDiscount() > 0) {
+          <div class="discount-badge-img">%{{ getDiscount() }} İndirim</div>
+        }
+      </div>
+      <div class="thumb-row">
+        <div class="thumb active">
+          <img [src]="product.imageUrl" [alt]="product.name" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Info -->
+    <div class="info-section">
+      <div class="product-meta">
+        <span class="brand-tag">DataPulse</span>
+        <span class="category-tag">{{ product.category }}</span>
+      </div>
+
+      <h1 class="product-title">{{ product.name }}</h1>
+
+      <!-- Rating Row -->
+      <div class="rating-row">
+        <div class="stars-display">
+          @for (s of starsArray(avgRating); track $index) {
+            <span class="star filled">★</span>
+          }
+          @for (s of emptyStarsArray(avgRating); track $index) {
+            <span class="star empty">★</span>
+          }
+        </div>
+        <a (click)="activeTab = 'reviews'" class="review-link">
+          {{ reviews.length > 0 ? reviews.length + ' değerlendirme' : 'İlk yorumu sen yaz' }}
+        </a>
+        @if (product.stock < 10 && product.stock > 0) {
+          <span class="low-stock">Son {{ product.stock }} ürün!</span>
+        }
+      </div>
+
+      <!-- Price -->
+      <div class="price-block">
+        <span class="old-price">₺{{ getDiscountedPrice() | number:'1.0-0' }}</span>
+        <span class="new-price">₺{{ product.price | number:'1.0-0' }}</span>
+        <span class="save-tag">₺{{ (getDiscountedPrice() - product.price) | number:'1.0-0' }} Tasarruf!</span>
+      </div>
+
+      <!-- Shipping & Guarantees -->
+      <div class="info-banners">
+        <div class="info-banner green">
+          <span class="banner-icon">🚚</span>
+          <div>
+            <strong>Ücretsiz Kargo</strong>
+            <small>150₺ ve üzeri siparişlerde</small>
+          </div>
+        </div>
+        <div class="info-banner blue">
+          <span class="banner-icon">📦</span>
+          <div>
+            <strong>Hızlı Teslimat</strong>
+            <small>Bugün sipariş ver, yarın kargoda</small>
+          </div>
+        </div>
+        <div class="info-banner orange">
+          <span class="banner-icon">↩️</span>
+          <div>
+            <strong>Kolay İade</strong>
+            <small>14 gün içinde ücretsiz iade</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quantity & Actions -->
+      <div class="action-row">
+        <div class="qty-selector">
+          <button class="qty-btn" (click)="quantity > 1 && (quantity = quantity - 1)" [disabled]="quantity <= 1">−</button>
+          <span class="qty-display">{{ quantity }}</span>
+          <button class="qty-btn" (click)="quantity = quantity + 1">+</button>
+        </div>
+
+        <button class="btn-cart" (click)="addToCart()">
+          🛒 Sepete Ekle
+        </button>
+
+        <button class="btn-wishlist" [class.active]="isFavorite" (click)="toggleWishlist()" title="Favorilere Ekle">
+          {{ isFavorite ? '❤️' : '🤍' }}
+        </button>
+      </div>
+
+      <!-- SKU & Guarantee -->
+      <div class="footer-meta">
+        <span>Stok No: <b>{{ product.sku || 'N/A' }}</b></span>
+        <span>🔒 Orijinal Ürün Garantisi</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Section -->
+  <div class="tab-section">
+    <div class="tab-bar">
+      <button class="tab-btn" [class.active]="activeTab === 'desc'" (click)="activeTab = 'desc'">
+        Ürün Açıklaması
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'reviews'" (click)="activeTab = 'reviews'">
+        Değerlendirmeler
+        @if (reviews.length > 0) {
+          <span class="tab-count">{{ reviews.length }}</span>
+        }
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'specs'" (click)="activeTab = 'specs'">
+        Teknik Özellikler
+      </button>
+    </div>
+
+    <!-- Description Tab -->
+    @if (activeTab === 'desc') {
+      <div class="tab-content">
+        <div class="desc-content">
+          <p>{{ product.description || 'Bu ürün için açıklama bulunmamaktadır.' }}</p>
+          <div class="feature-chips">
+            <span class="chip">✓ Orijinal Ürün</span>
+            <span class="chip">✓ 2 Yıl Garanti</span>
+            <span class="chip">✓ Fatura Kesilir</span>
+            <span class="chip">✓ Güvenli Ödeme</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Reviews Tab -->
+    @if (activeTab === 'reviews') {
+      <div class="tab-content">
+        <div class="reviews-layout">
+
+          <!-- Rating Summary -->
+          <div class="rating-summary-card">
+            <div class="big-rating">{{ avgRating.toFixed(1) }}</div>
+            <div class="stars-big">
+              @for (s of starsArray(avgRating); track $index) {
+                <span class="star filled">★</span>
+              }
+              @for (s of emptyStarsArray(avgRating); track $index) {
+                <span class="star empty">★</span>
+              }
+            </div>
+            <div class="total-reviews-text">{{ reviews.length }} değerlendirme</div>
+          </div>
+
+          <!-- Write Review -->
+          <div class="write-review-card">
+            <h3>Yorumunuzu Paylaşın</h3>
+
+            <div class="star-input-row">
+              <span class="star-label">Puanınız:</span>
+              @for (n of [1,2,3,4,5]; track n) {
+                <span
+                  class="star-input"
+                  [class.active]="n <= (hoverStar || newReview.rating)"
+                  (mouseenter)="hoverStar = n"
+                  (mouseleave)="hoverStar = 0"
+                  (click)="newReview.rating = n">★</span>
+              }
+              <span class="rating-label">
+                {{ newReview.rating === 5 ? 'Mükemmel' : newReview.rating === 4 ? 'İyi' : newReview.rating === 3 ? 'Orta' : newReview.rating === 2 ? 'Kötü' : 'Berbat' }}
+              </span>
+            </div>
+
+            <textarea
+              [(ngModel)]="newReview.text"
+              placeholder="Bu ürün hakkında ne düşünüyorsunuz? Kargo hızlı mıydı? Kalitesi nasıl?..."
+              rows="4"
+              class="review-textarea"></textarea>
+
+            <button class="submit-review-btn" (click)="submitReview()" [disabled]="submittingReview">
+              {{ submittingReview ? 'Gönderiliyor...' : 'Yorumu Gönder' }}
+            </button>
+          </div>
+
+          <!-- Reviews List -->
+          <div class="reviews-list">
+            @if (reviews.length === 0) {
+              <div class="empty-reviews">
+                <span class="empty-icon">💬</span>
+                <p>Henüz yorum yapılmamış. İlk yorumu sen yap!</p>
+              </div>
+            }
+            @for (review of reviews; track $index) {
+              <div class="review-card">
+                <div class="review-header">
+                  <div class="reviewer-avatar">{{ review.avatar }}</div>
+                  <div class="reviewer-info">
+                    <div class="reviewer-name">
+                      {{ review.author }}
+                      <span class="verified">✅ Onaylı Alıcı</span>
+                    </div>
+                    <div class="review-date">{{ review.date }}</div>
+                  </div>
+                  <div class="review-stars">
+                    @for (s of starsArray(review.rating); track $index) {
+                      <span class="star filled sm">★</span>
+                    }
+                    @for (s of emptyStarsArray(review.rating); track $index) {
+                      <span class="star empty sm">★</span>
+                    }
+                  </div>
+                </div>
+                <p class="review-text">{{ review.text }}</p>
+                <div class="review-footer">
+                  <span class="helpful-text">Bu yorum faydalı mı?</span>
+                  <button class="helpful-btn">👍 Evet ({{ review.helpfulCount }})</button>
+                </div>
+              </div>
+            }
+          </div>
+
+        </div>
+      </div>
+    }
+
+    <!-- Specs Tab -->
+    @if (activeTab === 'specs') {
+      <div class="tab-content">
+        <table class="specs-table">
+          <tbody>
+            <tr>
+              <td class="spec-key">Kategori</td>
+              <td class="spec-val">{{ product.category }}</td>
+            </tr>
+            <tr>
+              <td class="spec-key">Stok Durumu</td>
+              <td class="spec-val">
+                @if (product.stock > 0) {
+                  <span class="in-stock">Stokta Var ({{ product.stock }} adet)</span>
+                } @else {
+                  <span class="out-of-stock">Tükendi</span>
+                }
+              </td>
+            </tr>
+            <tr>
+              <td class="spec-key">Fiyat</td>
+              <td class="spec-val">₺{{ product.price | number:'1.0-0' }}</td>
+            </tr>
+            <tr>
+              <td class="spec-key">Stok Kodu</td>
+              <td class="spec-val">{{ product.sku || '-' }}</td>
+            </tr>
+            <tr>
+              <td class="spec-key">Garanti</td>
+              <td class="spec-val">2 Yıl Resmi Garantisi</td>
+            </tr>
+            <tr>
+              <td class="spec-key">İade Süresi</td>
+              <td class="spec-val">14 Gün</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+</div>
+}
+
+<!-- Auth Modal -->
+@if (showAuthModal) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-icon">🛒</div>
+      <h3>Devam etmek ister misiniz?</h3>
+      <p>Siparişi tamamlamak için giriş yapmanız önerilir.</p>
+      <div class="modal-actions">
+        <button (click)="goToLogin()" class="modal-btn primary">Giriş Yap / Kayıt Ol</button>
+        <button (click)="continueAsGuest()" class="modal-btn secondary">Üye Olmadan Devam Et</button>
+        <button (click)="closeModal()" class="modal-btn ghost">Alışverişe Dön</button>
+      </div>
+    </div>
+  </div>
+}

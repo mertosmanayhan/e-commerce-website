@@ -1,0 +1,93 @@
+<div class="page-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="highlight">Data</span>Pulse</div>
+
+    <div class="menu-section">
+      <p class="menu-label">ANA MENÜ</p>
+      <a routerLink="/dashboard"    routerLinkActive="active" class="menu-item"><span class="menu-icon">🏠</span> Dashboard</a>
+      <a routerLink="/analytics"    routerLinkActive="active" class="menu-item"><span class="menu-icon">📊</span> Analytics</a>
+      <a routerLink="/ai-assistant" routerLinkActive="active" class="menu-item"><span class="menu-icon">🤖</span> AI Assistant <span class="menu-badge">New</span></a>
+      <a routerLink="/orders"       routerLinkActive="active" class="menu-item"><span class="menu-icon">🛒</span> Siparişler</a>
+      <a routerLink="/products"     routerLinkActive="active" class="menu-item"><span class="menu-icon">📦</span> Ürünler</a>
+    </div>
+
+    <div class="menu-section">
+      <p class="menu-label">YÖNETİM</p>
+      @if (isAdmin) {
+        <a routerLink="/customers"      routerLinkActive="active" class="menu-item"><span class="menu-icon">👥</span> Müşteriler</a>
+        <a routerLink="/store-settings" routerLinkActive="active" class="menu-item"><span class="menu-icon">🏪</span> Mağaza Ayarları</a>
+      }
+      <a routerLink="/shipments"    routerLinkActive="active" class="menu-item"><span class="menu-icon">🚚</span> Kargolar</a>
+      <a routerLink="/reviews-page" routerLinkActive="active" class="menu-item"><span class="menu-icon">⭐</span> Değerlendirmeler</a>
+      @if (isAdmin) {
+        <a routerLink="/admin" routerLinkActive="active" class="menu-item admin-link"><span class="menu-icon">⚙️</span> Admin Paneli</a>
+      }
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">{{ (user?.fullName ?? 'U')[0] }}</div>
+        <div class="sidebar-user-info">
+          <span class="sidebar-name">{{ user?.fullName?.split(' ')[0] ?? 'Kullanıcı' }}</span>
+          <span class="sidebar-role">{{ user?.role ?? '' }}</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()">Çıkış</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <h1>🚚 Kargolar</h1>
+        <p class="sub">Kargo ve teslimat durumlarını takip edin</p>
+      </div>
+      <div class="header-stats">
+        <span class="stat-chip">Toplam: {{ shipments.length }}</span>
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+    } @else if (shipments.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h3>Henüz kargo kaydı yok</h3>
+        <p>Siparişler oluşturulduktan sonra kargo bilgileri burada görünecek.</p>
+        <a routerLink="/orders" class="btn-primary">Siparişlere Git</a>
+      </div>
+    } @else {
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Kargo No</th>
+              <th>Sipariş</th>
+              <th>Müşteri</th>
+              <th>Kargo Firması</th>
+              <th>Durum</th>
+              <th>Tarih</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of shipments; track s.id; let i = $index) {
+              <tr>
+                <td>{{ i + 1 }}</td>
+                <td class="tracking-cell">{{ s.trackingNumber ?? '-' }}</td>
+                <td>#{{ s.orderId ?? s.order?.id ?? '-' }}</td>
+                <td>{{ s.order?.user?.fullName ?? s.customerName ?? '-' }}</td>
+                <td>{{ s.carrier ?? 'Yurtiçi Kargo' }}</td>
+                <td><span class="status-badge" [class]="getStatusClass(s.status)">{{ getStatusLabel(s.status) }}</span></td>
+                <td>{{ s.createdAt ? (s.createdAt | date:'dd.MM.yyyy') : '-' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </main>
+</div>

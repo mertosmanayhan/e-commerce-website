@@ -1,0 +1,33 @@
+# ── Backend ──────────────────────────────────────────
+backend/target/
+backend/src/main/resources/application.yml
+
+# ── Frontend ─────────────────────────────────────────
+frontend/node_modules/
+frontend/.angular/
+frontend/dist/
+
+# ── IDE ──────────────────────────────────────────────
+.idea/
+.vscode/
+*.iml
+
+# ── OS ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Secrets ──────────────────────────────────────────
+*.env
+.env
+
+# ── Large datasets ───────────────────────────────────
+kaggle_etl/raw_data/
+
+# ── Logs ─────────────────────────────────────────────
+*.log
+backend.log
+
+# ── Claude ───────────────────────────────────────────
+.claude/
+*.json
+*.txt

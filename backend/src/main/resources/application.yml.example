@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: datapulse-ecommerce
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/datapulse_ecommerce?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: YOUR_DB_USERNAME
+    password: YOUR_DB_PASSWORD
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: YOUR_JWT_SECRET_BASE64_ENCODED
+    expiration-ms: 86400000
+    refresh-expiration-ms: 604800000
+
+stripe:
+  secret-key: sk_test_YOUR_STRIPE_SECRET_KEY
+  publishable-key: pk_test_YOUR_STRIPE_PUBLISHABLE_KEY
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+
+chatbot:
+  service:
+    url: http://localhost:8000
+
+logging:
+  level:
+    com.datapulse.ecommerce: DEBUG
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN

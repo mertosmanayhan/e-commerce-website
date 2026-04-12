@@ -1,0 +1,159 @@
+<div class="store-container">
+
+  <nav class="navbar">
+    <div class="logo"><span class="highlight">Data</span>Pulse <span class="logo-sub">| Store</span></div>
+
+    <div class="search-container">
+      <input type="text" [(ngModel)]="searchText" placeholder="Ürün, kategori veya marka ara..." class="search-input">
+      <span class="search-icon">🔍</span>
+    </div>
+
+
+    <div class="nav-actions">
+      @if (isAuth && currentUser?.role === 'INDIVIDUAL') {
+        <button class="orders-btn" routerLink="/analytics">📊 Analizlerim</button>
+        <button class="orders-btn" routerLink="/wishlist" style="color:#ff4757;">❤️ Favorilerim</button>
+        <button class="orders-btn" routerLink="/orders">📦 Siparişlerim</button>
+        <button class="cart-btn" routerLink="/cart">
+          Sepetim @if (cartCount > 0) { <span class="cart-badge">({{ cartCount }})</span> }
+        </button>
+      }
+
+      @if (isAuth && (currentUser?.role === 'CORPORATE' || currentUser?.role === 'ADMIN')) {
+        <button class="orders-btn" routerLink="/dashboard">📊 Dashboard</button>
+        <button class="orders-btn" routerLink="/orders">🛒 Siparişler</button>
+        <button class="orders-btn" routerLink="/shipments">🚚 Kargolar</button>
+      }
+
+      @if (!isAuth) {
+        <button class="login-btn" routerLink="/login">Giriş Yap</button>
+      }
+
+      @if (isAuth) {
+        <span style="font-weight:500;font-size:14px;margin-right:15px;color:#2c3e50;">
+          Merhaba, {{ currentUser?.fullName?.split(' ')[0] || 'Kullanıcı' }}
+        </span>
+        <button class="login-btn" style="background:#e74c3c;border-color:#e74c3c;box-shadow:0 4px 15px rgba(231,76,60,0.3);" (click)="logout()">Çıkış Yap</button>
+      }
+    </div>
+  </nav>
+
+  <div class="main-layout">
+
+    <aside class="sidebar-filters">
+
+      <h3>Kategoriler</h3>
+      <ul class="category-list">
+        <li *ngFor="let cat of categories"
+            (click)="selectCategory(cat)"
+            [class.active]="selectedCategory === cat">
+          {{ cat }}
+        </li>
+      </ul>
+
+      <div class="filter-group">
+        <h3>Fiyat Aralığı</h3>
+        <div class="price-inputs">
+          <input type="number" [(ngModel)]="minPrice" placeholder="En Az ($)">
+          <span>-</span>
+          <input type="number" [(ngModel)]="maxPrice" placeholder="En Çok ($)">
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <h3>Değerlendirme Puanı</h3>
+        <div class="rating-filters">
+          <label class="radio-label">
+            <input type="radio" name="rating" [value]="0" [(ngModel)]="selectedRating"> Tüm Ürünler
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="rating" [value]="4.5" [(ngModel)]="selectedRating">
+            <span class="stars-text">⭐⭐⭐⭐</span> 4.5 ve Üzeri
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="rating" [value]="4" [(ngModel)]="selectedRating">
+            <span class="stars-text">⭐⭐⭐⭐</span> 4 Yıldız ve Üzeri
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="rating" [value]="3" [(ngModel)]="selectedRating">
+            <span class="stars-text">⭐⭐⭐</span> 3 Yıldız ve Üzeri
+          </label>
+        </div>
+      </div>
+
+    </aside>
+
+    <div class="products-wrapper">
+      <div class="products-header">
+        <h2>{{ selectedCategory }} <span class="result-count">({{ filteredProducts.length }} ürün bulundu)</span></h2>
+
+        <select class="sort-select" [(ngModel)]="sortOption">
+          <option>En Yeniler</option>
+          <option>En Çok Değerlendirilenler</option>
+          <option>Fiyata Göre Artan</option>
+          <option>Fiyata Göre Azalan</option>
+        </select>
+      </div>
+
+      <div class="product-grid">
+        <div class="product-card" *ngFor="let product of filteredProducts">
+
+          <div class="stock-badge low-stock" *ngIf="product.stock > 0 && product.stock <= 5">Son {{ product.stock }} Ürün!</div>
+          <div class="stock-badge out-of-stock" *ngIf="product.stock === 0">Tükendi</div>
+          <button class="wishlist-btn" (click)="toggleWishlist(product)">
+            {{ isFavorite(product.id) ? '❤️' : '🤍' }}
+          </button>
+          <div class="card-image" style="width: 100%; height: 200px; overflow: hidden; border-radius: 12px 12px 0 0; background: #f0f0f0; margin-bottom: 10px;">
+            <img [src]="product.imageUrl" [alt]="product.name" 
+                 style="width: 100%; height: 100%; object-fit: cover;" 
+                 [class.grayscale]="product.stock === 0">
+          </div>
+
+          <div class="card-content">
+            <div class="product-info">
+              <span class="category-tag">{{ product.category }}</span>
+              <h3 class="product-name" [class.faded]="product.stock === 0">{{ product.name }}</h3>
+
+              <div class="rating-box">
+                <span class="stars">{{ getStars(product.rating) }}</span>
+                <span class="review-count">({{ product.reviewCount }})</span>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <div class="product-price" [class.faded]="product.stock === 0">${{ product.price }}</div>
+              <div class="action-buttons">
+                <button class="add-cart-btn" (click)="onAddToCartClick(product)" [disabled]="product.stock === 0">
+                  {{ product.stock === 0 ? 'Tükendi' : 'Sepete Ekle' }}
+                </button>
+                <button class="detail-btn" [routerLink]="['/product', product.id]">İncele</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="filteredProducts.length === 0" class="no-results">
+          <div style="font-size: 50px;">🕵️‍♂️</div>
+          <h3>Arama kriterlerinize uygun ürün bulunamadı.</h3>
+          <p>Lütfen farklı kelimelerle tekrar deneyin.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showAuthModal">
+    <div class="modal-box">
+      <div class="modal-icon">🛒</div>
+      <h3 style="margin-top:0; color: #2c3e50;">Ürün Sepete Eklendi!</h3>
+      <p style="color: #666; font-size: 14px; margin-bottom: 25px;">Siparişini tamamlamak için nasıl devam etmek istersin?</p>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button (click)="goToLogin()" class="modal-btn primary">Giriş Yap veya Üye Ol</button>
+        <button (click)="continueAsGuest()" class="modal-btn secondary">Üye Olmadan Devam Et</button>
+        <button (click)="closeModal()" class="modal-btn text-only">Alışverişe Dön</button>
+      </div>
+    </div>
+  </div>
+
+</div>
