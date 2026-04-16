@@ -16,6 +16,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Page<Order> findByUserId(Long userId, Pageable pageable);
 
+    @Query("SELECT DISTINCT o FROM Order o JOIN o.items oi JOIN oi.product p WHERE p.store.owner.id = :ownerId")
+    Page<Order> findByStoreOwnerId(@Param("ownerId") Long ownerId, Pageable pageable);
+
     Optional<Order> findByOrderNumber(String orderNumber);
 
     List<Order> findByStatus(OrderStatus status);
@@ -32,10 +35,15 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.orderDate BETWEEN :start AND :end")
     BigDecimal sumRevenueByDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
+    // Item bazlı platform geliri (store geliriyle tutarlı)
+    @Query("SELECT SUM(oi.unitPrice * oi.quantity) FROM OrderItem oi WHERE oi.order.orderDate BETWEEN :start AND :end")
+    BigDecimal sumItemRevenueByDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
     // ── Analytics queries ──────────────────────────────────────────────────
 
-    @Query("SELECT SUM(o.totalAmount) FROM Order o JOIN o.items oi JOIN oi.product p " +
-           "WHERE p.store.id = :storeId AND o.orderDate BETWEEN :start AND :end")
+    // Sadece o mağazanın ürünlerinden gelen gelir (sipariş toplamı değil, ürün bazlı)
+    @Query("SELECT SUM(oi.unitPrice * oi.quantity) FROM OrderItem oi JOIN oi.product p " +
+           "WHERE p.store.id = :storeId AND oi.order.orderDate BETWEEN :start AND :end")
     BigDecimal sumRevenueByStoreAndDateRange(@Param("storeId") Long storeId,
                                              @Param("start") LocalDateTime start,
                                              @Param("end") LocalDateTime end);

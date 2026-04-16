@@ -2,12 +2,14 @@ package com.datapulse.ecommerce.controller;
 import com.datapulse.ecommerce.dto.request.ProductRequest;
 import com.datapulse.ecommerce.dto.response.ApiResponse;
 import com.datapulse.ecommerce.dto.response.ProductResponse;
+import com.datapulse.ecommerce.security.UserPrincipal;
 import com.datapulse.ecommerce.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -16,9 +18,20 @@ public class ProductController {
     private final ProductService productService;
     public ProductController(ProductService ps) { this.productService = ps; }
 
-    @GetMapping @Operation(summary="List products") public ResponseEntity<ApiResponse<Page<ProductResponse>>> getAll(@RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size, @RequestParam(defaultValue="createdAt") String sortBy, @RequestParam(defaultValue="desc") String sortDir) {
-        Sort sort = sortDir.equalsIgnoreCase("asc")?Sort.by(sortBy).ascending():Sort.by(sortBy).descending();
-        return ResponseEntity.ok(ApiResponse.success(productService.getAllProducts(PageRequest.of(page,size,sort))));
+    @GetMapping @Operation(summary="List products")
+    public ResponseEntity<ApiResponse<Page<ProductResponse>>> getAll(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(defaultValue="0") int page,
+            @RequestParam(defaultValue="20") int size,
+            @RequestParam(defaultValue="createdAt") String sortBy,
+            @RequestParam(defaultValue="desc") String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        // CORPORATE kullanıcılar yalnızca kendi mağazalarının ürünlerini görür
+        if (principal != null && "CORPORATE".equals(principal.getRole())) {
+            return ResponseEntity.ok(ApiResponse.success(productService.getProductsByStoreOwner(principal.getId(), pageable)));
+        }
+        return ResponseEntity.ok(ApiResponse.success(productService.getAllProducts(pageable)));
     }
     @GetMapping("/{id}") @Operation(summary="Get product") public ResponseEntity<ApiResponse<ProductResponse>> getById(@PathVariable Long id) { return ResponseEntity.ok(ApiResponse.success(productService.getProductById(id))); }
     @GetMapping("/search") @Operation(summary="Search") public ResponseEntity<ApiResponse<Page<ProductResponse>>> search(@RequestParam String keyword, @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size) { return ResponseEntity.ok(ApiResponse.success(productService.searchProducts(keyword,PageRequest.of(page,size)))); }

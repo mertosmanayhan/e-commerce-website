@@ -50,7 +50,7 @@
         <p class="sub">{{ filtered.length }} değerlendirme</p>
       </div>
       <div style="display:flex;gap:10px;align-items:center">
-        @if (isIndividual) {
+        @if (canWriteReview) {
           <button class="write-btn" (click)="showWriteForm = !showWriteForm">
             {{ showWriteForm ? '✕ Kapat' : '✍️ Yorum Yaz' }}
           </button>
@@ -59,7 +59,7 @@
     </div>
 
     <!-- Write Review Form -->
-    @if (showWriteForm && isIndividual) {
+    @if (showWriteForm && canWriteReview) {
       <div class="write-form-card">
         <h3>Yeni Değerlendirme</h3>
         @if (submitMsg) { <div class="alert-msg">{{ submitMsg }}</div> }
@@ -101,6 +101,12 @@
           <option [value]="i">{{ i }} ★</option>
         }
       </select>
+      <select [(ngModel)]="sortOrder" class="filter-select">
+        <option value="newest">En Yeni</option>
+        <option value="oldest">En Eski</option>
+        <option value="highest">En Yüksek Puan</option>
+        <option value="lowest">En Düşük Puan</option>
+      </select>
     </div>
 
     @if (loading) {
@@ -116,19 +122,22 @@
         @for (r of filtered; track r.id) {
           <div class="review-card">
             <div class="review-header">
-              <div class="reviewer-avatar">{{ (r.user?.fullName ?? r.userName ?? 'A')[0] }}</div>
+              <div class="reviewer-avatar">{{ (r.user?.fullName ?? 'A')[0] }}</div>
               <div class="reviewer-info">
-                <span class="reviewer-name">{{ r.user?.fullName ?? r.userName ?? 'Anonim' }}</span>
+                <span class="reviewer-name">{{ r.user?.fullName ?? 'Anonim' }}</span>
                 <span class="review-date">{{ r.createdAt ? (r.createdAt | date:'dd.MM.yyyy') : '-' }}</span>
               </div>
               <div class="stars">
-                @for (s of starsArray(r.starRating ?? r.rating ?? 0); track $index) { <span class="star-filled">★</span> }
-                @for (s of emptyStarsArray(r.starRating ?? r.rating ?? 0); track $index) { <span class="star-empty">★</span> }
+                @for (s of starsArray(r.starRating ?? 0); track $index) { <span class="star-filled">★</span> }
+                @for (s of emptyStarsArray(r.starRating ?? 0); track $index) { <span class="star-empty">★</span> }
               </div>
             </div>
 
-            <div class="product-name">📦 {{ r.product?.name ?? r.productName ?? 'Ürün' }}</div>
-            <p class="review-text">{{ r.reviewText ?? r.text ?? '-' }}</p>
+            <!-- Ürüne git linki -->
+            <a [routerLink]="['/product', r.productId]" class="product-link">
+              📦 {{ r.productName ?? 'Ürün' }}
+            </a>
+            <p class="review-text">{{ r.reviewText ?? '-' }}</p>
 
             <!-- Corporate response -->
             @if (r.corporateResponse && respondingId !== r.id) {

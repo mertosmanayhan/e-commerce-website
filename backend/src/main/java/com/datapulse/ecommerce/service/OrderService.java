@@ -25,6 +25,7 @@ public class OrderService {
 
     public Page<OrderResponse> getOrdersByUser(Long userId, Pageable p) { return orderRepository.findByUserId(userId, p).map(OrderResponse::fromEntity); }
     public Page<OrderResponse> getOrdersByStore(Long storeId, Pageable p) { return orderRepository.findByStoreId(storeId, p).map(OrderResponse::fromEntity); }
+    public Page<OrderResponse> getOrdersByStoreOwner(Long ownerId, Pageable p) { return orderRepository.findByStoreOwnerId(ownerId, p).map(OrderResponse::fromEntity); }
     public Page<OrderResponse> getAllOrders(Pageable p) { return orderRepository.findAll(p).map(OrderResponse::fromEntity); }
     public OrderResponse getOrderById(Long id) { return OrderResponse.fromEntity(orderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Order","id",id))); }
 

@@ -127,3 +127,31 @@ tr.suspended td { opacity: .6; }
   .kpi-grid { grid-template-columns: 1fr; }
   .main-content { padding: 12px; }
 }
+
+/* ── Reviews tab ─────────────────────────────────────────── */
+.review-product-link { color: #8c52ff; text-decoration: none; font-weight: 500; }
+.review-product-link:hover { text-decoration: underline; }
+.star-badge { color: #ccc; font-size: 14px; }
+.star-badge .filled { color: #f39c12; }
+.review-text-cell { max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btn-view { display: inline-block; padding: 5px 12px; background: #8c52ff; color: #fff; border-radius: 6px; font-size: 12px; text-decoration: none; font-weight: 600; transition: .18s; }
+.btn-view:hover { background: #7a3fee; }
+
+/* ── Review filters ─────────────────────────────────────── */
+.review-filters { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-sel { padding: 7px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; background: #fff; cursor: pointer; }
+.review-count { margin-left: auto; color: #888; font-size: 13px; }
+
+/* ── Overview cards ─────────────────────────────────────── */
+.kpi-card.clickable { cursor: pointer; }
+.kpi-card.clickable:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(140,82,255,.15); border-color: #8c52ff; }
+.overview-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+.ov-card { background: #fff; border: 1px solid #eaeaea; border-radius: 14px; padding: 20px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: .2s; text-decoration: none; color: inherit; }
+.ov-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.08); border-color: #8c52ff; }
+.ov-icon { font-size: 28px; width: 50px; text-align: center; flex-shrink: 0; }
+.ov-info { flex: 1; }
+.ov-info h4 { margin: 0 0 4px; font-size: 15px; color: #2c3e50; font-weight: 700; }
+.ov-info p { margin: 0; font-size: 12px; color: #999; }
+.ov-arrow { font-size: 22px; color: #ccc; font-weight: 300; }
+@media (max-width: 900px) { .overview-cards-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .overview-cards-grid { grid-template-columns: 1fr; } }

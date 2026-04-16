@@ -13,7 +13,7 @@ export const routes: Routes = [
 
   // Auth-only routes — lazy loaded
   { path: 'cart',      loadComponent: () => import('./cart/cart').then(m => m.CartComponent),    canActivate: [authGuard] },
-  { path: 'checkout',  loadComponent: () => import('./checkout/checkout').then(m => m.Checkout), canActivate: [authGuard] },
+  { path: 'checkout',  loadComponent: () => import('./checkout/checkout').then(m => m.Checkout), canActivate: [roleGuard(['INDIVIDUAL'])] },
   { path: 'orders',    loadComponent: () => import('./orders/orders').then(m => m.Orders),       canActivate: [authGuard] },
   { path: 'wishlist',  loadComponent: () => import('./wishlist/wishlist').then(m => m.Wishlist),  canActivate: [authGuard] },
   { path: 'profile',   loadComponent: () => import('./profile/profile').then(m => m.Profile),     canActivate: [authGuard] },
@@ -26,7 +26,7 @@ export const routes: Routes = [
   // Role-based routes — lazy loaded
   { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard').then(m => m.Dashboard),      canActivate: [roleGuard(['CORPORATE', 'ADMIN'])] },
   { path: 'analytics', loadComponent: () => import('./analytics/analytics').then(m => m.AnalyticsPage),  canActivate: [roleGuard(['INDIVIDUAL'])] },
-  { path: 'admin',     loadComponent: () => import('./admin/admin').then(m => m.AdminPanel),              canActivate: [roleGuard(['ADMIN'])] },
+  { path: 'admin',     redirectTo: 'dashboard', pathMatch: 'full' },
 
   { path: '**', redirectTo: 'products' }
 ];

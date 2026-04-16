@@ -29,9 +29,10 @@ export class ReviewsPage implements OnInit {
   responseText = '';
   savingResponse = false;
 
-  // Filter
+  // Filter & sort
   filterRating = 0;
   searchText = '';
+  sortOrder: 'newest' | 'oldest' | 'highest' | 'lowest' = 'newest';
 
   constructor(
     private http: HttpClient,
@@ -41,16 +42,17 @@ export class ReviewsPage implements OnInit {
   ) {}
 
   get user() { return this.authService.getCurrentUser(); }
-  get isAdmin()     { return this.user?.role === 'ADMIN'; }
-  get isCorporate() { return this.user?.role === 'CORPORATE'; }
-  get isIndividual(){ return this.user?.role === 'INDIVIDUAL'; }
-  get canDelete()   { return this.isAdmin || this.isCorporate; }
-  get canRespond()  { return this.isCorporate || this.isAdmin; }
+  get isAdmin()        { return this.user?.role === 'ADMIN'; }
+  get isCorporate()    { return this.user?.role === 'CORPORATE'; }
+  get isIndividual()   { return this.user?.role === 'INDIVIDUAL'; }
+  get canDelete()      { return this.isAdmin || this.isCorporate; }
+  get canRespond()     { return this.isCorporate || this.isAdmin; }
+  get canWriteReview() { return !!this.user; } // tüm giriş yapmış kullanıcılar
 
   ngOnInit() {
     if (!this.user) { this.router.navigate(['/login']); return; }
     this.load();
-    if (this.isIndividual) this.loadProducts();
+    this.loadProducts(); // tüm roller ürün listesine erişebilmeli (yorum yazmak için)
   }
 
   load() {
@@ -68,14 +70,23 @@ export class ReviewsPage implements OnInit {
   }
 
   get filtered() {
-    return this.reviews.filter(r => {
-      const rating = r.starRating ?? r.rating ?? 0;
-      const matchRating = !this.filterRating || rating === this.filterRating;
+    const ratingNum = Number(this.filterRating);
+    let result = this.reviews.filter(r => {
+      const rating = r.starRating ?? 0;
+      const matchRating = !ratingNum || rating === ratingNum;
       const matchSearch = !this.searchText ||
-        (r.product?.name ?? r.productName ?? '').toLowerCase().includes(this.searchText.toLowerCase()) ||
+        (r.productName ?? '').toLowerCase().includes(this.searchText.toLowerCase()) ||
         (r.user?.fullName ?? '').toLowerCase().includes(this.searchText.toLowerCase());
       return matchRating && matchSearch;
     });
+
+    switch (this.sortOrder) {
+      case 'newest':  result = [...result].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); break;
+      case 'oldest':  result = [...result].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()); break;
+      case 'highest': result = [...result].sort((a, b) => (b.starRating ?? 0) - (a.starRating ?? 0)); break;
+      case 'lowest':  result = [...result].sort((a, b) => (a.starRating ?? 0) - (b.starRating ?? 0)); break;
+    }
+    return result;
   }
 
   submitReview() {

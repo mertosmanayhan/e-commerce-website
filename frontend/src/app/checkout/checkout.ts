@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CartService, CartItem } from '../cart.service';
 import { OrderService } from '../order.service';
+import { AuthService } from '../auth.service';
 import { environment } from '../../environments/environment';
 
 declare var Stripe: any;
@@ -45,10 +46,17 @@ export class Checkout implements OnInit, OnDestroy {
     private orderService: OrderService,
     private router: Router,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
+    const user = this.authService.getCurrentUser();
+    if (user?.role === 'CORPORATE' || user?.role === 'ADMIN') {
+      // Mağaza sahipleri ve adminler sipariş oluşturamaz
+      this.router.navigate(['/dashboard']);
+      return;
+    }
     this.cartItems = this.cartService.getItems();
     this.total = this.cartService.getCartTotal();
     if (this.cartItems.length === 0) { this.router.navigate(['/products']); return; }

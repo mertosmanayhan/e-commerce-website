@@ -358,6 +358,8 @@
   transition: 0.2s; font-weight: 600;
 }
 .helpful-btn:hover { border-color: #8c52ff; color: #8c52ff; background: #f7f3ff; }
+.helpful-btn.voted { background: #f0ebff; border-color: #8c52ff; color: #8c52ff; cursor: default; }
+.helpful-btn:disabled { opacity: 0.7; cursor: default; }
 
 /* ─── SPECS TABLE ─────────────────────────────────────── */
 .specs-table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -424,3 +426,27 @@
   .btn-cart { width: 100%; order: -1; }
   .modal-box { width: calc(100% - 32px); padding: 28px 20px; }
 }
+
+/* ── Reply / Corp response ─────────────────────────── */
+.corp-response-box { background: #f0f4ff; border-left: 3px solid #8c52ff; border-radius: 6px; padding: 10px 14px; margin: 10px 0; }
+.corp-response-label { font-size: 12px; font-weight: 700; color: #8c52ff; display: block; margin-bottom: 4px; }
+.corp-response-text { margin: 0; font-size: 13px; color: #444; }
+.corp-edit-box { margin: 10px 0; display: flex; flex-direction: column; gap: 6px; }
+.corp-edit-textarea { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 8px 10px; font-size: 13px; resize: none; font-family: inherit; box-sizing: border-box; }
+.corp-save-btn { align-self: flex-end; padding: 6px 16px; background: #8c52ff; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.corp-save-btn:disabled { opacity: .5; cursor: not-allowed; }
+.replies-list { margin: 10px 0 6px 20px; display: flex; flex-direction: column; gap: 8px; border-left: 2px solid #eee; padding-left: 12px; }
+.reply-item { display: flex; gap: 8px; }
+.reply-avatar { width: 28px; height: 28px; border-radius: 50%; background: #e2d9f3; color: #8c52ff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+.reply-body { flex: 1; }
+.reply-author { font-size: 12px; font-weight: 700; color: #2c3e50; margin-right: 6px; }
+.reply-date { font-size: 11px; color: #aaa; }
+.reply-text { margin: 2px 0 0; font-size: 13px; color: #555; }
+.reply-toggle-btn { background: none; border: none; color: #8c52ff; font-size: 12px; cursor: pointer; padding: 4px 0; font-weight: 600; }
+.reply-toggle-btn:hover { text-decoration: underline; }
+.reply-form { margin: 8px 0; }
+.reply-textarea { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 8px 10px; font-size: 13px; resize: none; font-family: inherit; box-sizing: border-box; }
+.reply-form-actions { display: flex; gap: 8px; margin-top: 6px; }
+.reply-submit-btn { padding: 6px 16px; background: #8c52ff; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.reply-submit-btn:disabled { opacity: .5; cursor: not-allowed; }
+.reply-cancel-btn { padding: 6px 14px; background: #f0f0f0; color: #666; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; }

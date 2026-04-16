@@ -83,6 +83,8 @@
 .star-filled { color: #f59e0b; font-size: 16px; }
 .star-empty  { color: #d1d5db; font-size: 16px; }
 .product-name { font-size: 12px; color: #8c52ff; font-weight: 600; margin-bottom: 8px; }
+.product-link { font-size: 12px; color: #8c52ff; font-weight: 600; margin-bottom: 8px; display: inline-block; text-decoration: none; }
+.product-link:hover { text-decoration: underline; }
 .review-text { font-size: 14px; color: #4a5568; line-height: 1.6; margin: 0; }
 
 /* Empty / Loading */

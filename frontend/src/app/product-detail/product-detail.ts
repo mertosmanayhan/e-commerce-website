@@ -10,12 +10,20 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
 interface ReviewItem {
+  id: number;
   author: string;
   avatar: string;
   rating: number;
   date: string;
   text: string;
   helpfulCount: number;
+  totalVotes: number;
+  voted: boolean;
+  corporateResponse?: string;
+  replies?: ReviewItem[];
+  showReplyForm?: boolean;
+  replyText?: string;
+  submittingReply?: boolean;
 }
 
 @Component({
@@ -79,20 +87,75 @@ export class ProductDetail implements OnInit {
     });
   }
 
+  private mapReview(r: any): ReviewItem {
+    return {
+      id: r.id,
+      author: r.user?.fullName || 'Anonim',
+      avatar: (r.user?.fullName || 'A')[0].toUpperCase(),
+      rating: r.starRating ?? 0,
+      date: r.createdAt ? new Date(r.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Bilinmiyor',
+      text: r.reviewText,
+      helpfulCount: r.helpfulVotes ?? 0,
+      totalVotes: r.totalVotes ?? 0,
+      voted: false,
+      corporateResponse: r.corporateResponse ?? null,
+      replies: (r.replies ?? []).map((c: any) => this.mapReview(c)),
+      showReplyForm: false,
+      replyText: '',
+      submittingReply: false
+    };
+  }
+
   loadReviews(productId: number) {
     this.http.get<any>(`${environment.apiUrl}/reviews/product/${productId}`).subscribe({
       next: res => {
         if (res.success && res.data) {
-          this.reviews = res.data.map((r: any) => ({
-            author: r.user?.fullName || 'Anonim',
-            avatar: (r.user?.fullName || 'A')[0].toUpperCase(),
-            rating: r.starRating,
-            date: new Date(r.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }),
-            text: r.reviewText,
-            helpfulCount: r.helpfulVotes ?? 0
-          }));
+          this.reviews = res.data.map((r: any) => this.mapReview(r));
           this.cdr.detectChanges();
         }
+      },
+      error: () => {}
+    });
+  }
+
+  // Kullanıcılar arası yanıt (reply)
+  submitReply(review: ReviewItem) {
+    if (!this.isAuth || !review.replyText?.trim()) return;
+    review.submittingReply = true;
+    const payload = { parentId: review.id, reviewText: review.replyText, starRating: 0 };
+    this.http.post<any>(`${environment.apiUrl}/reviews`, payload).subscribe({
+      next: res => {
+        const newReply = this.mapReview(res.data ?? { id: 0, user: { fullName: this.currentUser?.fullName }, reviewText: review.replyText, starRating: 0, createdAt: new Date() });
+        if (!review.replies) review.replies = [];
+        review.replies.push(newReply);
+        review.replyText = '';
+        review.showReplyForm = false;
+        review.submittingReply = false;
+        this.cdr.detectChanges();
+      },
+      error: () => { review.submittingReply = false; this.cdr.detectChanges(); }
+    });
+  }
+
+  // Mağaza sahibi / admin — corporateResponse kaydet
+  respondToReview(review: ReviewItem, response: string) {
+    this.http.patch<any>(`${environment.apiUrl}/reviews/${review.id}/respond`, { response }).subscribe({
+      next: res => {
+        review.corporateResponse = res?.data?.corporateResponse ?? response;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
+  }
+
+  voteHelpful(review: ReviewItem) {
+    if (review.voted) return;
+    this.http.post<any>(`${environment.apiUrl}/reviews/${review.id}/vote`, { helpful: true }).subscribe({
+      next: res => {
+        review.helpfulCount = res?.data?.helpfulVotes ?? review.helpfulCount + 1;
+        review.totalVotes = res?.data?.totalVotes ?? review.totalVotes + 1;
+        review.voted = true;
+        this.cdr.detectChanges();
       },
       error: () => {}
     });
@@ -108,8 +171,9 @@ export class ProductDetail implements OnInit {
   toggleWishlist() {
     if (!this.product) return;
     if (!this.isAuth) { this.router.navigate(['/login']); return; }
+    const wasFav = this.isFavorite;
     this.wishlistService.toggleFavorite(this.product);
-    const msg = this.isFavorite ? 'Favorilerden çıkarıldı' : 'Favorilere eklendi ❤️';
+    const msg = wasFav ? 'Favorilerden çıkarıldı' : 'Favorilere eklendi ❤️';
     this.showToast(msg, 'success');
   }
 
@@ -120,14 +184,17 @@ export class ProductDetail implements OnInit {
 
     const payload = { productId: this.product?.id, starRating: this.newReview.rating, reviewText: this.newReview.text };
     this.http.post<any>(`${environment.apiUrl}/reviews`, payload).subscribe({
-      next: () => {
-        this.reviews.unshift({
+      next: (res) => {
+        const saved = res?.data;
+        this.reviews.unshift(saved ? this.mapReview(saved) : {
+          id: 0,
           author: this.currentUser?.fullName || 'Sen',
           avatar: (this.currentUser?.fullName || 'S')[0].toUpperCase(),
           rating: this.newReview.rating,
           date: 'Az önce',
           text: this.newReview.text,
-          helpfulCount: 0
+          helpfulCount: 0, totalVotes: 0, voted: false,
+          replies: [], showReplyForm: false, replyText: '', submittingReply: false
         });
         this.newReview = { rating: 5, text: '' };
         this.submittingReview = false;

@@ -15,6 +15,9 @@
       <button class="menu-item" [class.active]="activeTab==='stores'" (click)="activeTab='stores'">
         <span class="menu-icon">🏪</span> Mağazalar
       </button>
+      <button class="menu-item" [class.active]="activeTab==='reviews'" (click)="activeTab='reviews'; loadReviews()">
+        <span class="menu-icon">⭐</span> Değerlendirmeler
+      </button>
       <button class="menu-item" [class.active]="activeTab==='comparison'" (click)="activeTab='comparison'; loadComparison()">
         <span class="menu-icon">📊</span> Mağaza Karşılaştırma
       </button>
@@ -60,17 +63,18 @@
 
     <!-- ── Overview ─────────────────────────────────────── -->
     @if (activeTab === 'overview') {
+      <!-- KPI Kartları -->
       <div class="kpi-grid">
-        <div class="kpi-card">
+        <div class="kpi-card clickable" (click)="activeTab='users'">
           <div class="kpi-icon" style="background:rgba(140,82,255,.1);color:#8c52ff">👥</div>
           <div><h3>{{ stats.totalUsers }}</h3><p>Toplam Kullanıcı</p></div>
         </div>
-        <div class="kpi-card">
+        <div class="kpi-card clickable" (click)="activeTab='stores'">
           <div class="kpi-icon" style="background:rgba(39,174,96,.1);color:#27ae60">🏪</div>
           <div><h3>{{ stats.totalStores }}</h3><p>Toplam Mağaza</p></div>
         </div>
-        <div class="kpi-card">
-          <div class="kpi-icon" style="background:rgba(52,152,219,.1);color:#3498db">📦</div>
+        <div class="kpi-card clickable" (click)="activeTab='reviews'; loadReviews()">
+          <div class="kpi-icon" style="background:rgba(52,152,219,.1);color:#3498db">⭐</div>
           <div><h3>{{ stats.totalOrders }}</h3><p>Toplam Sipariş</p></div>
         </div>
         <div class="kpi-card">
@@ -79,12 +83,55 @@
         </div>
       </div>
 
-      <div class="info-box">
-        <h3>Hızlı Erişim</h3>
-        <div class="quick-links">
-          <button class="quick-btn" (click)="activeTab='users'">👥 Kullanıcıları Yönet</button>
-          <button class="quick-btn" (click)="activeTab='stores'">🏪 Mağazaları Yönet</button>
-          <a routerLink="/dashboard" class="quick-btn">📊 Analitik Dashboard</a>
+      <!-- Hızlı Erişim Kartları -->
+      <div class="overview-cards-grid">
+        <div class="ov-card" (click)="activeTab='users'">
+          <div class="ov-icon">👥</div>
+          <div class="ov-info">
+            <h4>Kullanıcı Yönetimi</h4>
+            <p>Kullanıcıları görüntüle, askıya al veya sil</p>
+          </div>
+          <span class="ov-arrow">›</span>
+        </div>
+        <div class="ov-card" (click)="activeTab='stores'">
+          <div class="ov-icon">🏪</div>
+          <div class="ov-info">
+            <h4>Mağaza Yönetimi</h4>
+            <p>Mağazaları aç/kapat, bilgilerini düzenle</p>
+          </div>
+          <span class="ov-arrow">›</span>
+        </div>
+        <div class="ov-card" (click)="activeTab='reviews'; loadReviews()">
+          <div class="ov-icon">⭐</div>
+          <div class="ov-info">
+            <h4>Değerlendirmeler</h4>
+            <p>Tüm ürün yorumlarını incele ve yönet</p>
+          </div>
+          <span class="ov-arrow">›</span>
+        </div>
+        <div class="ov-card" (click)="activeTab='comparison'; loadComparison()">
+          <div class="ov-icon">📊</div>
+          <div class="ov-info">
+            <h4>Mağaza Karşılaştırma</h4>
+            <p>Mağazaların performansını karşılaştır</p>
+          </div>
+          <span class="ov-arrow">›</span>
+        </div>
+        <div class="ov-card" (click)="activeTab='audit'; loadAuditLog()">
+          <div class="ov-icon">📋</div>
+          <div class="ov-info">
+            <h4>Aktivite Logu</h4>
+            <p>Son siparişler ve kullanıcı kayıtları</p>
+          </div>
+          <span class="ov-arrow">›</span>
+        </div>
+        <div class="ov-card" routerLink="/dashboard">
+          <div class="ov-icon">📈</div>
+          <div class="ov-info">
+            <h4>Analitik Dashboard</h4>
+            <p>Satış grafikleri ve gelir analizi</p>
+          </div>
+          <span class="ov-arrow">›</span>
         </div>
       </div>
     }
@@ -206,6 +253,73 @@
               <span class="bar-val">{{ s.products }}</span>
             </div>
           }
+        </div>
+      }
+    }
+
+    <!-- ── Reviews ──────────────────────────────────────── -->
+    @if (activeTab === 'reviews') {
+      <div class="section-header">
+        <h2>Değerlendirmeler</h2>
+        <button class="btn-refresh" (click)="loadReviews()">Yenile</button>
+      </div>
+
+      <!-- Filtreler -->
+      <div class="review-filters">
+        <select [(ngModel)]="reviewSortOrder" class="filter-sel">
+          <option value="newest">En Yeni</option>
+          <option value="oldest">En Eski</option>
+          <option value="highest">En Yüksek Puan</option>
+          <option value="lowest">En Düşük Puan</option>
+        </select>
+        <select [(ngModel)]="reviewFilterRating" class="filter-sel">
+          <option [value]="0">Tüm Puanlar</option>
+          @for (i of [5,4,3,2,1]; track i) {
+            <option [value]="i">{{ i }} ★</option>
+          }
+        </select>
+        <span class="review-count">{{ filteredReviews.length }} yorum</span>
+      </div>
+
+      @if (loadingReviews) {
+        <div class="loading-row"><div class="spinner"></div><span>Yükleniyor...</span></div>
+      } @else if (reviews.length === 0 && reviewsLoaded) {
+        <div class="empty-row-box">Henüz değerlendirme yok.</div>
+      } @else {
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Ürün</th><th>Kullanıcı</th><th>Puan</th><th>Yorum</th><th>Mağaza Yanıtı</th><th>Tarih</th><th>İşlem</th></tr>
+            </thead>
+            <tbody>
+              @for (r of filteredReviews; track r.id) {
+                <tr>
+                  <td>#{{ r.id }}</td>
+                  <td>
+                    <a [routerLink]="['/product', r.productId]" class="review-product-link">
+                      {{ r.productName ?? 'Ürün #' + r.productId }}
+                    </a>
+                  </td>
+                  <td>{{ r.user?.fullName ?? 'Anonim' }}</td>
+                  <td>
+                    <span class="star-badge">
+                      @for (s of [1,2,3,4,5]; track s) {
+                        <span [class.filled]="s <= r.starRating">★</span>
+                      }
+                    </span>
+                  </td>
+                  <td class="review-text-cell">{{ r.reviewText }}</td>
+                  <td class="review-text-cell">{{ r.corporateResponse ?? '-' }}</td>
+                  <td>{{ r.createdAt | date:'dd.MM.yyyy' }}</td>
+                  <td>
+                    <a [routerLink]="['/product', r.productId]" class="btn-view">Görüntüle</a>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="8" class="empty-row">Değerlendirme bulunamadı.</td></tr>
+              }
+            </tbody>
+          </table>
         </div>
       }
     }

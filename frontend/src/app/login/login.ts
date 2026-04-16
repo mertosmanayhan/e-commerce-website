@@ -47,9 +47,7 @@ export class Login implements OnInit {
           this.wishlistService.loadWishlist();
 
           const role = res.data.user.role;
-          if (role === 'ADMIN') {
-            this.router.navigate(['/admin']);
-          } else if (role === 'CORPORATE') {
+          if (role === 'ADMIN' || role === 'CORPORATE') {
             this.router.navigate(['/dashboard']);
           } else {
             this.router.navigate(['/products']); // INDIVIDUAL → alışveriş
@@ -58,7 +56,12 @@ export class Login implements OnInit {
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = 'E-posta veya şifre hatalı!';
+        const msg = err?.error?.message ?? '';
+        if (msg.includes('askıya')) {
+          this.errorMessage = 'Hesabınız askıya alınmıştır. Lütfen yöneticiyle iletişime geçin.';
+        } else {
+          this.errorMessage = 'E-posta veya şifre hatalı!';
+        }
       }
     });
   }

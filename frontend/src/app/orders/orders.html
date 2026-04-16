@@ -66,8 +66,11 @@
             </div>
 
             <div class="order-footer">
-              <span class="footer-label">Toplam Tutar</span>
-              <span class="order-total">${{ (order.totalAmount ?? 0).toFixed(2) }}</span>
+              <div class="price-breakdown">
+                <div class="price-row"><span>Ara Toplam</span><span>${{ (order.totalAmount ?? 0).toFixed(2) }}</span></div>
+                <div class="price-row"><span>Vergi (%8)</span><span>${{ ((order.totalAmount ?? 0) * 0.08).toFixed(2) }}</span></div>
+                <div class="price-row total-row"><span>Genel Toplam</span><span>${{ ((order.totalAmount ?? 0) * 1.08).toFixed(2) }}</span></div>
+              </div>
             </div>
           </div>
         }

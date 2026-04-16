@@ -10,13 +10,15 @@ import java.time.LocalDateTime;
 })
 public class Review {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id", nullable = false) private User user;
+    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id", nullable = false) private User user;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "product_id", nullable = false) @JsonIgnore private Product product;
     @Column(nullable = false) private Integer starRating;
     @Column(columnDefinition = "TEXT") private String reviewText;
     @Column(columnDefinition = "TEXT") private String corporateResponse;
     private Integer helpfulVotes; private Integer totalVotes;
     @Column(nullable = false, updatable = false) private LocalDateTime createdAt;
+    // Kullanıcılar arası yanıt — parent yorumun ID'si (null ise ana yorum)
+    @Column(name = "parent_id") private Long parentId;
 
     public Review() {}
     @PrePersist protected void onCreate() { this.createdAt = LocalDateTime.now(); if(helpfulVotes==null) helpfulVotes=0; if(totalVotes==null) totalVotes=0; }
@@ -29,6 +31,7 @@ public class Review {
     public Integer getHelpfulVotes() { return helpfulVotes; } public void setHelpfulVotes(Integer v) { this.helpfulVotes = v; }
     public Integer getTotalVotes() { return totalVotes; } public void setTotalVotes(Integer v) { this.totalVotes = v; }
     public String getCorporateResponse() { return corporateResponse; } public void setCorporateResponse(String v) { this.corporateResponse = v; }
+    public Long getParentId() { return parentId; } public void setParentId(Long v) { this.parentId = v; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
     public static ReviewBuilder builder() { return new ReviewBuilder(); }

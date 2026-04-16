@@ -22,6 +22,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByStockLessThan(Integer threshold);
 
+    @Query("SELECT p FROM Product p WHERE p.store.owner.id = :ownerId")
+    Page<Product> findByStoreOwnerId(@Param("ownerId") Long ownerId, Pageable pageable);
+
     @Query("SELECT p FROM Product p ORDER BY p.reviewCount DESC")
     List<Product> findTopProducts(Pageable pageable);
 }

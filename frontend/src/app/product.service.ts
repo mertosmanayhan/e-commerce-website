@@ -12,7 +12,9 @@ export interface Product {
   icon?: string;
   description: string;
   categoryName: string;
-  category?: string; 
+  category?: string;
+  storeName?: string;
+  storeId?: number;
   rating: number;
   reviewCount: number;
   stock: number;

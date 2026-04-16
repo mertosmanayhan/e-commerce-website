@@ -123,9 +123,11 @@
             <div class="card-footer">
               <div class="product-price" [class.faded]="product.stock === 0">${{ product.price }}</div>
               <div class="action-buttons">
-                <button class="add-cart-btn" (click)="onAddToCartClick(product)" [disabled]="product.stock === 0">
-                  {{ product.stock === 0 ? 'Tükendi' : 'Sepete Ekle' }}
-                </button>
+                @if (currentUser?.role !== 'CORPORATE' && currentUser?.role !== 'ADMIN') {
+                  <button class="add-cart-btn" (click)="onAddToCartClick(product)" [disabled]="product.stock === 0">
+                    {{ product.stock === 0 ? 'Tükendi' : 'Sepete Ekle' }}
+                  </button>
+                }
                 <button class="detail-btn" [routerLink]="['/product', product.id]">İncele</button>
               </div>
             </div>

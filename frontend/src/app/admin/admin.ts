@@ -15,7 +15,14 @@ import { AuthService } from '../auth.service';
   styleUrl: './admin.css'
 })
 export class AdminPanel implements OnInit {
-  activeTab: 'overview' | 'users' | 'stores' | 'audit' | 'comparison' = 'overview';
+  activeTab: 'overview' | 'users' | 'stores' | 'reviews' | 'audit' | 'comparison' = 'overview';
+
+  // Reviews
+  reviews: any[] = [];
+  loadingReviews = false;
+  reviewsLoaded = false;
+  reviewSortOrder: 'newest' | 'oldest' | 'highest' | 'lowest' = 'newest';
+  reviewFilterRating = 0;
   loading = false;
 
   // Overview KPIs
@@ -54,25 +61,20 @@ export class AdminPanel implements OnInit {
   }
 
   loadOverview() {
-    this.http.get<any>(`${environment.apiUrl}/analytics/dashboard`).subscribe({
-      next: res => {
-        if (res?.data) {
-          const d = res.data;
-          this.stats = {
-            totalUsers:   d.totalCustomers  ?? 0,
-            totalStores:  0,
-            totalOrders:  d.totalOrders     ?? 0,
-            totalRevenue: `$${(d.totalRevenue ?? 0).toLocaleString()}`
-          };
-        }
-      },
-      error: () => {}
-    });
-
-    this.http.get<any>(`${environment.apiUrl}/stores`).subscribe({
-      next: res => {
-        const list = res?.data?.content ?? res?.data ?? [];
-        this.stats.totalStores = list.length;
+    forkJoin({
+      dashboard: this.http.get<any>(`${environment.apiUrl}/analytics/dashboard`),
+      stores:    this.http.get<any>(`${environment.apiUrl}/stores`)
+    }).subscribe({
+      next: ({ dashboard, stores }) => {
+        const d = dashboard?.data ?? {};
+        const list: any[] = Array.isArray(stores?.data) ? stores.data : (stores?.data?.content ?? []);
+        this.stats = {
+          totalUsers:   d.totalCustomers ?? 0,
+          totalStores:  list.length,
+          totalOrders:  d.totalOrders    ?? 0,
+          totalRevenue: `$${(d.totalRevenue ?? 0).toLocaleString()}`
+        };
+        this.cdr.detectChanges();
       },
       error: () => {}
     });
@@ -164,6 +166,24 @@ export class AdminPanel implements OnInit {
     });
   }
 
+  loadReviews() {
+    this.loadingReviews = true;
+    this.reviewsLoaded = false;
+    this.http.get<any>(`${environment.apiUrl}/reviews`).subscribe({
+      next: res => {
+        this.reviews = Array.isArray(res?.data) ? res.data : (res?.data?.content ?? []);
+        this.loadingReviews = false;
+        this.reviewsLoaded = true;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingReviews = false;
+        this.reviewsLoaded = true;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   loadComparison() {
     this.loadingComparison = true;
     this.comparisonError = '';
@@ -199,6 +219,20 @@ export class AdminPanel implements OnInit {
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  get filteredReviews(): any[] {
+    const ratingNum = Number(this.reviewFilterRating);
+    let r = ratingNum
+      ? this.reviews.filter(x => x.starRating === ratingNum)
+      : [...this.reviews];
+    switch (this.reviewSortOrder) {
+      case 'newest':  r.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); break;
+      case 'oldest':  r.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()); break;
+      case 'highest': r.sort((a, b) => (b.starRating ?? 0) - (a.starRating ?? 0)); break;
+      case 'lowest':  r.sort((a, b) => (a.starRating ?? 0) - (b.starRating ?? 0)); break;
+    }
+    return r;
   }
 
   get maxProducts(): number {

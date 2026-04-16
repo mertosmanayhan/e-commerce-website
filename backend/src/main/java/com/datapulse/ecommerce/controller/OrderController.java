@@ -30,8 +30,12 @@ public class OrderController {
             @RequestParam(required=false) String status) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("orderDate").descending());
         Page<OrderResponse> orders;
-        if (principal.getRole().equals("ADMIN")) {
+        String role = principal.getRole();
+        if ("ADMIN".equals(role)) {
             orders = orderService.getAllOrders(pageable);
+        } else if ("CORPORATE".equals(role)) {
+            // Corporate: kendi mağazasının ürünlerini içeren siparişler
+            orders = orderService.getOrdersByStoreOwner(principal.getId(), pageable);
         } else {
             orders = orderService.getOrdersByUser(principal.getId(), pageable);
         }

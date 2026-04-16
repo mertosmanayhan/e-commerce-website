@@ -1,49 +1,81 @@
 <div class="dashboard-page">
 
-  <!-- Sidebar -->
+  <!-- ── Sidebar ─────────────────────────────────────────────── -->
   <aside class="sidebar">
-    <div class="sidebar-logo">
-      <span class="highlight">Data</span>Pulse
+    <div class="sidebar-logo"><span class="highlight">Data</span>Pulse</div>
+
+    <!-- GENEL -->
+    <div class="menu-section">
+      <p class="menu-label">GENEL</p>
+      <button class="menu-item" [class.active]="activeTab==='overview'" (click)="setTab('overview')">
+        <span class="menu-icon">🏠</span> Genel Bakış
+      </button>
     </div>
 
-    <div class="menu-section">
-      <p class="menu-label">ANA MENÜ</p>
-      <a routerLink="/dashboard" routerLinkActive="active" class="menu-item">
-        <span class="menu-icon">📊</span> Satış Analitiği
-      </a>
-      <a routerLink="/products" routerLinkActive="active" class="menu-item">
-        <span class="menu-icon">📦</span> Ürünler
-      </a>
-      <a routerLink="/orders" routerLinkActive="active" class="menu-item">
-        <span class="menu-icon">🛒</span> Siparişler
-      </a>
-      <a routerLink="/shipments" routerLinkActive="active" class="menu-item">
-        <span class="menu-icon">🚚</span> Kargolar
-      </a>
-      <a routerLink="/ai-assistant" routerLinkActive="active" class="menu-item">
-        <span class="menu-icon">🤖</span> AI Asistan
-        <span class="menu-badge">New</span>
-      </a>
-    </div>
+    <!-- YÖNETİM (sadece admin) -->
+    @if (isAdmin) {
+      <div class="menu-section">
+        <p class="menu-label">YÖNETİM</p>
+        <button class="menu-item" [class.active]="activeTab==='users'" (click)="setTab('users')">
+          <span class="menu-icon">👥</span> Kullanıcılar
+        </button>
+        <button class="menu-item" [class.active]="activeTab==='stores'" (click)="setTab('stores')">
+          <span class="menu-icon">🏪</span> Mağazalar
+        </button>
+        <button class="menu-item" [class.active]="activeTab==='reviews'" (click)="setTab('reviews')">
+          <span class="menu-icon">⭐</span> Değerlendirmeler
+        </button>
+        <button class="menu-item" [class.active]="activeTab==='comparison'" (click)="setTab('comparison')">
+          <span class="menu-icon">📊</span> Mağaza Karşılaştırma
+        </button>
+      </div>
+    }
 
+    <!-- ANALİTİK -->
     <div class="menu-section">
-      <p class="menu-label">YÖNETİM</p>
-      <a routerLink="/store-settings" routerLinkActive="active" class="menu-item">
-        <span class="menu-icon">🏪</span> Mağaza Ayarları
-      </a>
-      <a routerLink="/reviews-page" routerLinkActive="active" class="menu-item">
-        <span class="menu-icon">⭐</span> Değerlendirmeler
-      </a>
+      <p class="menu-label">ANALİTİK</p>
+      <button class="menu-item" [class.active]="activeTab==='analytics'" (click)="setTab('analytics')">
+        <span class="menu-icon">📈</span> Dashboard Analytics
+      </button>
       @if (isAdmin) {
-        <a routerLink="/customers" routerLinkActive="active" class="menu-item">
-          <span class="menu-icon">👥</span> Müşteriler
-        </a>
-        <a routerLink="/admin" routerLinkActive="active" class="menu-item admin-link">
-          <span class="menu-icon">⚙️</span> Admin Paneli
-        </a>
+        <button class="menu-item" [class.active]="activeTab==='audit'" (click)="setTab('audit')">
+          <span class="menu-icon">📋</span> Aktivite Logu
+        </button>
       }
     </div>
 
+    <!-- MAĞAZA -->
+    <div class="menu-section">
+      <p class="menu-label">MAĞAZA</p>
+      <button class="menu-item" [class.active]="activeTab==='products'" (click)="setTab('products')">
+        <span class="menu-icon">📦</span> Ürünler
+      </button>
+      <button class="menu-item" [class.active]="activeTab==='orders'" (click)="setTab('orders')">
+        <span class="menu-icon">🛒</span> Siparişler
+      </button>
+      <button class="menu-item" [class.active]="activeTab==='store-settings'" (click)="setTab('store-settings')">
+        <span class="menu-icon">⚙️</span> Mağaza Ayarları
+      </button>
+      <button class="menu-item" [class.active]="activeTab==='shipments'" (click)="setTab('shipments')">
+        <span class="menu-icon">🚚</span> Kargolar
+      </button>
+      @if (!isAdmin) {
+        <button class="menu-item" [class.active]="activeTab==='reviews'" (click)="setTab('reviews')">
+          <span class="menu-icon">⭐</span> Değerlendirmeler
+        </button>
+      }
+    </div>
+
+    <!-- ARAÇLAR -->
+    <div class="menu-section">
+      <p class="menu-label">ARAÇLAR</p>
+      <button class="menu-item" [class.active]="activeTab==='ai'" (click)="setTab('ai')">
+        <span class="menu-icon">🤖</span> AI Asistan
+        <span class="menu-badge">New</span>
+      </button>
+    </div>
+
+    <!-- Sidebar Footer -->
     <div class="sidebar-footer">
       <div class="sidebar-user">
         <div class="sidebar-avatar">{{ (user?.fullName ?? 'U')[0] }}</div>
@@ -56,163 +88,645 @@
     </div>
   </aside>
 
-  <!-- Main -->
+  <!-- ── Main Content ─────────────────────────────────────────── -->
   <main class="dashboard-content">
-    <header class="top-header">
-      <div>
-        <h1 style="margin:0;color:#2c3e50;font-size:22px">Hoş Geldin, {{ user?.fullName ?? 'Kullanıcı' }} 👋</h1>
-        <p style="margin:5px 0 0;color:#888;font-size:14px">
-          {{ isAdmin ? 'Tüm platformun analiz özeti.' : 'Mağazanızın analiz özeti.' }}
-        </p>
-      </div>
-      <div class="profile-area" style="gap:12px">
-        <select class="date-range-select" [(ngModel)]="selectedDays" (change)="onDateRangeChange()">
-          @for (r of dateRanges; track r.value) {
-            <option [value]="r.value">{{ r.label }}</option>
-          }
-        </select>
+
+    <!-- ══ GENEL BAKIŞ ══════════════════════════════════════════ -->
+    @if (activeTab === 'overview') {
+      <div class="section-header">
+        <div>
+          <h2>🏠 Genel Bakış</h2>
+          <p class="sub-text">Hoş geldin, {{ user?.fullName?.split(' ')[0] ?? 'Kullanıcı' }}! İşte bugünün özeti.</p>
+        </div>
         <span class="role-badge" [class.admin-badge]="isAdmin">{{ isAdmin ? 'Admin' : 'Corporate' }}</span>
-        <div class="avatar">{{ (user?.fullName ?? 'U')[0] }}</div>
       </div>
-    </header>
-
-    @if (loading) {
-      <div class="loading-state">
-        <div class="spinner"></div>
-        <p>Veriler yükleniyor...</p>
-      </div>
-    } @else {
-
-      <!-- KPI Cards -->
-      <div class="kpi-container">
-        <div class="kpi-card">
-          <div class="kpi-top">
-            <div class="icon-box" style="background:rgba(140,82,255,.1);color:#8c52ff">💰</div>
-            <span class="badge positive">{{ kpi.revenueGrowth }}</span>
+      @if (overviewLoading) {
+        <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+      } @else {
+        <div class="kpi-container">
+          <div class="kpi-card clickable" (click)="setTab('analytics')">
+            <div class="kpi-top"><div class="icon-box" style="background:rgba(140,82,255,.1);color:#8c52ff">💰</div></div>
+            <h3>{{ overviewStats.totalRevenue }}</h3><p>Toplam Gelir</p>
           </div>
-          <h3>{{ kpi.revenue }}</h3><p>Toplam Gelir</p>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-top">
-            <div class="icon-box" style="background:rgba(39,174,96,.1);color:#27ae60">📦</div>
-            <span class="badge positive">{{ kpi.ordersGrowth }}</span>
+          <div class="kpi-card clickable" (click)="setTab('orders')">
+            <div class="kpi-top"><div class="icon-box" style="background:rgba(39,174,96,.1);color:#27ae60">📦</div></div>
+            <h3>{{ overviewStats.totalOrders }}</h3><p>Toplam Sipariş</p>
           </div>
-          <h3>{{ kpi.orders }}</h3><p>Toplam Sipariş</p>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-top">
-            <div class="icon-box" style="background:rgba(52,152,219,.1);color:#3498db">👥</div>
-            <span class="badge positive">{{ kpi.customersGrowth }}</span>
-          </div>
-          <h3>{{ kpi.customers }}</h3><p>{{ isAdmin ? 'Toplam Müşteri' : 'Ürün Sayısı' }}</p>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-top">
-            <div class="icon-box" style="background:rgba(241,196,15,.1);color:#f39c12">⭐</div>
-            <span class="badge positive">{{ kpi.ratingGrowth }}</span>
-          </div>
-          <h3>{{ kpi.rating }}</h3><p>Ortalama Puan</p>
-        </div>
-      </div>
-
-      <!-- Charts Row 1 -->
-      <div class="charts-row">
-        <div class="chart-box wide">
-          <h3>Satış Trendi (Son 14 Gün)</h3>
-          <div style="height:280px">
-            <canvas baseChart [data]="salesChartData" [options]="salesChartOptions" [type]="'line'"></canvas>
-          </div>
-        </div>
-        <div class="chart-box">
-          <h3>Kategori Bazlı Gelir</h3>
-          <div style="height:280px">
-            <canvas baseChart [data]="categoryChartData" [options]="categoryChartOptions" [type]="'doughnut'"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- Customer Segmentation -->
-      <div class="segment-section">
-        <div class="segment-header">
-          <h3>Müşteri Segmentasyonu</h3>
-          <button class="segment-btn" (click)="loadSegments()" [disabled]="loadingSegments">
-            {{ loadingSegments ? 'Yükleniyor...' : '📊 Analiz Et' }}
-          </button>
-        </div>
-        @if (showSegments && segments) {
-          <div class="segment-grid">
-            <div class="seg-card">
-              <div class="seg-icon" style="background:rgba(140,82,255,.1);color:#8c52ff">👤</div>
-              <div><h4>{{ segments.totalIndividual }}</h4><p>Bireysel Müşteri</p></div>
+          @if (isAdmin) {
+            <div class="kpi-card clickable" (click)="setTab('users')">
+              <div class="kpi-top"><div class="icon-box" style="background:rgba(52,152,219,.1);color:#3498db">👥</div></div>
+              <h3>{{ overviewStats.totalUsers }}</h3><p>Toplam Kullanıcı</p>
             </div>
-            <div class="seg-card">
-              <div class="seg-icon" style="background:rgba(39,174,96,.1);color:#27ae60">🏢</div>
-              <div><h4>{{ segments.totalCorporate }}</h4><p>Kurumsal Müşteri</p></div>
-            </div>
-            <div class="seg-card">
-              <div class="seg-icon" style="background:rgba(52,152,219,.1);color:#3498db">🆕</div>
-              <div><h4>{{ segments.newCustomers30d }}</h4><p>Son 30 Günde Yeni</p></div>
-            </div>
-          </div>
-          @if (segments.topSpenders?.length) {
-            <div class="top-spenders">
-              <h4>En Çok Harcayan Müşteriler</h4>
-              <table class="top-table">
-                <thead><tr><th>#</th><th>Ad Soyad</th><th>E-posta</th><th>Sipariş</th><th>Toplam Harcama</th></tr></thead>
-                <tbody>
-                  @for (s of segments.topSpenders; track s.email; let i = $index) {
-                    <tr>
-                      <td>{{ i + 1 }}</td>
-                      <td>{{ s.name }}</td>
-                      <td>{{ s.email }}</td>
-                      <td>{{ s.orders }}</td>
-                      <td>${{ s.total.toFixed(2) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+            <div class="kpi-card clickable" (click)="setTab('stores')">
+              <div class="kpi-top"><div class="icon-box" style="background:rgba(241,196,15,.1);color:#f39c12">🏪</div></div>
+              <h3>{{ overviewStats.totalStores }}</h3><p>Toplam Mağaza</p>
             </div>
           }
+          <div class="kpi-card clickable" (click)="setTab('reviews')">
+            <div class="kpi-top"><div class="icon-box" style="background:rgba(231,76,60,.1);color:#e74c3c">⭐</div></div>
+            <h3>{{ overviewStats.avgRating }}</h3><p>Ortalama Puan</p>
+          </div>
+        </div>
+
+        <!-- Hızlı Erişim -->
+        <div class="quick-access-section">
+          <h3 class="qa-title">Hızlı Erişim</h3>
+          <div class="quick-grid">
+            @if (isAdmin) {
+              <button class="quick-card" (click)="setTab('users')">
+                <span class="quick-icon">👥</span>
+                <span class="quick-label">Kullanıcılar</span>
+              </button>
+              <button class="quick-card" (click)="setTab('stores')">
+                <span class="quick-icon">🏪</span>
+                <span class="quick-label">Mağazalar</span>
+              </button>
+              <button class="quick-card" (click)="setTab('comparison')">
+                <span class="quick-icon">📊</span>
+                <span class="quick-label">Mağaza Karşılaştırma</span>
+              </button>
+              <button class="quick-card" (click)="setTab('audit')">
+                <span class="quick-icon">📋</span>
+                <span class="quick-label">Aktivite Logu</span>
+              </button>
+            }
+            <button class="quick-card" (click)="setTab('analytics')">
+              <span class="quick-icon">📈</span>
+              <span class="quick-label">Analytics</span>
+            </button>
+            <button class="quick-card" (click)="setTab('products')">
+              <span class="quick-icon">📦</span>
+              <span class="quick-label">Ürünler</span>
+            </button>
+            <button class="quick-card" (click)="setTab('orders')">
+              <span class="quick-icon">🛒</span>
+              <span class="quick-label">Siparişler</span>
+            </button>
+            <button class="quick-card" (click)="setTab('store-settings')">
+              <span class="quick-icon">⚙️</span>
+              <span class="quick-label">Mağaza Ayarları</span>
+            </button>
+            <button class="quick-card" (click)="setTab('shipments')">
+              <span class="quick-icon">🚚</span>
+              <span class="quick-label">Kargolar</span>
+            </button>
+            <button class="quick-card" (click)="setTab('reviews')">
+              <span class="quick-icon">⭐</span>
+              <span class="quick-label">Değerlendirmeler</span>
+            </button>
+            <button class="quick-card" (click)="setTab('ai')">
+              <span class="quick-icon">🤖</span>
+              <span class="quick-label">AI Asistan</span>
+            </button>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ══ KULLANICILAR ══════════════════════════════════════════ -->
+    @if (activeTab === 'users') {
+      <div class="section-header">
+        <div><h2>👥 Kullanıcılar</h2><p class="sub-text">{{ users.length }} kayıtlı kullanıcı</p></div>
+        <button class="btn-refresh" (click)="loadUsers()">Yenile</button>
+      </div>
+      <div class="filters-bar">
+        <input type="text" [(ngModel)]="userFilter" placeholder="Ad, e-posta veya rol ile ara..." class="search-input">
+      </div>
+      @if (usersLoading) {
+        <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+      } @else if (filteredUsers.length === 0) {
+        <div class="empty-state"><div class="empty-icon">👥</div><h3>Kullanıcı bulunamadı</h3></div>
+      } @else {
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Ad Soyad</th><th>E-posta</th><th>Rol</th><th>Durum</th><th>İşlemler</th></tr>
+            </thead>
+            <tbody>
+              @for (u of filteredUsers; track u.id; let i = $index) {
+                <tr>
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ u.fullName }}</td>
+                  <td>{{ u.email }}</td>
+                  <td><span class="role-badge-sm" [class]="roleClass(u.role)">{{ roleLabel(u.role) }}</span></td>
+                  <td><span class="status-dot" [class.suspended]="u.suspended">{{ u.suspended ? 'Askıda' : 'Aktif' }}</span></td>
+                  <td class="action-cell">
+                    <button class="action-btn toggle" (click)="toggleUserSuspend(u)">{{ u.suspended ? '✅ Aktif Et' : '🔴 Askıya Al' }}</button>
+                    <button class="action-btn delete" (click)="deleteUser(u)">🗑️ Sil</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
+    <!-- ══ MAĞAZALAR ════════════════════════════════════════════ -->
+    @if (activeTab === 'stores') {
+      <div class="section-header">
+        <div><h2>🏪 Mağazalar</h2><p class="sub-text">{{ stores.length }} mağaza</p></div>
+        <button class="btn-refresh" (click)="loadStores()">Yenile</button>
+      </div>
+      @if (storesLoading) {
+        <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+      } @else if (stores.length === 0) {
+        <div class="empty-state"><div class="empty-icon">🏪</div><h3>Mağaza bulunamadı</h3></div>
+      } @else {
+        <div class="stores-grid">
+          @for (store of stores; track store.id) {
+            <div class="store-card">
+              <div class="store-header">
+                <div class="store-icon">🏪</div>
+                <div class="store-info">
+                  <h3>{{ store.name }}</h3>
+                  <span class="store-owner">{{ store.owner?.fullName ?? store.ownerName ?? '-' }}</span>
+                </div>
+                <span class="status-badge" [class.active]="store.open !== false">{{ store.open !== false ? 'Aktif' : 'Pasif' }}</span>
+              </div>
+              <div class="store-details">
+                <div class="detail-row"><span class="detail-label">E-posta</span><span>{{ store.email ?? store.owner?.email ?? '-' }}</span></div>
+                <div class="detail-row"><span class="detail-label">Adres</span><span>{{ store.address ?? '-' }}</span></div>
+                <div class="detail-row"><span class="detail-label">Ürün</span><span>{{ store.productCount ?? store.products?.length ?? 0 }}</span></div>
+              </div>
+              <div class="card-actions">
+                <button class="action-btn toggle" (click)="toggleStore(store)">{{ store.open !== false ? '🔴 Kapat' : '🟢 Aç' }}</button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ══ DEĞERLENDİRMELER ══════════════════════════════════════ -->
+    @if (activeTab === 'reviews') {
+      <div class="section-header">
+        <div><h2>⭐ Değerlendirmeler</h2><p class="sub-text">{{ filteredReviews.length }} değerlendirme</p></div>
+        @if (isCorporate) {
+          <button class="btn-primary" (click)="showWriteForm = !showWriteForm">{{ showWriteForm ? '✕ Kapat' : '✍️ Yorum Yaz' }}</button>
         }
       </div>
 
-      <!-- Charts Row 2 -->
-      <div class="charts-row">
-        <div class="chart-box">
-          <h3>Sipariş Durumu</h3>
-          <div style="height:230px">
-            <canvas baseChart [data]="statusChartData" [options]="statusChartOptions" [type]="'bar'"></canvas>
+      @if (showWriteForm && isCorporate) {
+        <div class="form-card">
+          <h3>Yeni Değerlendirme</h3>
+          @if (submitMsg) { <div class="alert-msg">{{ submitMsg }}</div> }
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ürün</label>
+              <select [(ngModel)]="newReview.productId" class="form-select">
+                <option [ngValue]="null">Ürün seçin...</option>
+                @for (p of products; track p.id) { <option [ngValue]="p.id">{{ p.name }}</option> }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Puan</label>
+              <div class="star-picker">
+                @for (i of [1,2,3,4,5]; track i) { <span class="pick-star" [class.active]="i <= newReview.starRating" (click)="newReview.starRating = i">★</span> }
+              </div>
+            </div>
           </div>
-          <div class="status-summary">
-            <div class="status-item s-pending"><span class="dot"></span>Beklemede: {{ orderStatus.pending }}</div>
-            <div class="status-item s-shipped"><span class="dot"></span>Kargoda: {{ orderStatus.shipped }}</div>
-            <div class="status-item s-delivered"><span class="dot"></span>Teslim: {{ orderStatus.delivered }}</div>
-            <div class="status-item s-cancelled"><span class="dot"></span>İptal: {{ orderStatus.cancelled }}</div>
+          <div class="form-group">
+            <label>Yorumunuz</label>
+            <textarea [(ngModel)]="newReview.reviewText" rows="3" placeholder="Ürün hakkında düşüncelerinizi yazın..." class="form-textarea"></textarea>
+          </div>
+          <button class="btn-primary" (click)="submitReview()" [disabled]="submittingReview || !newReview.productId">{{ submittingReview ? 'Gönderiliyor...' : 'Yorum Gönder' }}</button>
+        </div>
+      }
+
+      <div class="filters-bar">
+        <input type="text" [(ngModel)]="reviewSearchText" placeholder="Ürün veya kullanıcı ara..." class="search-input">
+        <select [(ngModel)]="reviewFilterRating" class="filter-select">
+          <option [value]="0">Tüm Puanlar</option>
+          @for (i of [5,4,3,2,1]; track i) { <option [value]="i">{{ i }} ★</option> }
+        </select>
+        <select [(ngModel)]="reviewSortOrder" class="filter-select">
+          <option value="newest">En Yeni</option>
+          <option value="oldest">En Eski</option>
+          <option value="highest">En Yüksek Puan</option>
+          <option value="lowest">En Düşük Puan</option>
+        </select>
+      </div>
+
+      @if (reviewsLoading) {
+        <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+      } @else if (filteredReviews.length === 0) {
+        <div class="empty-state"><div class="empty-icon">💬</div><h3>Değerlendirme bulunamadı</h3></div>
+      } @else {
+        <div class="reviews-grid">
+          @for (r of filteredReviews; track r.id) {
+            <div class="review-card">
+              <div class="review-header">
+                <div class="reviewer-avatar">{{ (r.user?.fullName ?? 'A')[0] }}</div>
+                <div class="reviewer-info">
+                  <span class="reviewer-name">{{ r.user?.fullName ?? 'Anonim' }}</span>
+                  <span class="review-date">{{ r.createdAt ? (r.createdAt | date:'dd.MM.yyyy') : '-' }}</span>
+                </div>
+                <div class="stars">
+                  @for (s of starsArray(r.starRating ?? 0); track $index) { <span class="star-filled">★</span> }
+                  @for (s of emptyStarsArray(r.starRating ?? 0); track $index) { <span class="star-empty">★</span> }
+                </div>
+              </div>
+              <a [routerLink]="['/product', r.productId]" class="product-link">📦 {{ r.productName ?? 'Ürün' }}</a>
+              <p class="review-text">{{ r.reviewText ?? '-' }}</p>
+              @if (r.corporateResponse && respondingId !== r.id) {
+                <div class="corp-response"><span class="corp-label">🏢 Mağaza Yanıtı:</span><p>{{ r.corporateResponse }}</p></div>
+              }
+              @if (respondingId === r.id) {
+                <div class="respond-form">
+                  <textarea [(ngModel)]="responseText" rows="2" placeholder="Yanıtınızı yazın..." class="form-textarea"></textarea>
+                  <div style="display:flex;gap:8px;margin-top:8px">
+                    <button class="btn-primary sm" (click)="saveResponse(r.id)" [disabled]="savingResponse">{{ savingResponse ? '...' : 'Kaydet' }}</button>
+                    <button class="btn-outline sm" (click)="respondingId = null">İptal</button>
+                  </div>
+                </div>
+              }
+              <div class="card-actions">
+                @if (respondingId !== r.id) { <button class="action-btn respond" (click)="startRespond(r)">💬 Yanıtla</button> }
+                @if (isAdmin) { <button class="action-btn delete" (click)="deleteReview(r.id)">🗑️ Sil</button> }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ══ MAĞAZA KARŞILAŞTIRMA ═════════════════════════════════ -->
+    @if (activeTab === 'comparison') {
+      <div class="section-header">
+        <div><h2>📊 Mağaza Karşılaştırma</h2><p class="sub-text">Mağazaların performans karşılaştırması</p></div>
+        <button class="btn-refresh" (click)="loadComparison()">Yenile</button>
+      </div>
+      @if (loadingComparison) {
+        <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+      } @else if (comparisonError) {
+        <div class="empty-state"><div class="empty-icon">⚠️</div><h3>{{ comparisonError }}</h3></div>
+      } @else if (storeComparison.length === 0) {
+        <div class="empty-state"><div class="empty-icon">📊</div><h3>Karşılaştırma verisi yok</h3></div>
+      } @else {
+        <div class="comparison-list">
+          @for (s of storeComparison; track s.id) {
+            <div class="comparison-row">
+              <div class="cmp-store-info">
+                <span class="cmp-name">{{ s.name }}</span>
+                <span class="cmp-owner">{{ s.owner }}</span>
+              </div>
+              <div class="cmp-bar-wrap">
+                <div class="cmp-bar" [style.width.%]="(s.products / maxProducts) * 100"></div>
+              </div>
+              <div class="cmp-stats">
+                <span class="cmp-count">{{ s.products }} ürün</span>
+                <span class="status-badge" [class.active]="s.active">{{ s.active ? 'Aktif' : 'Pasif' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ══ AKTİVİTE LOGU ════════════════════════════════════════ -->
+    @if (activeTab === 'audit') {
+      <div class="section-header">
+        <div><h2>📋 Aktivite Logu</h2><p class="sub-text">Son platform aktiviteleri</p></div>
+        <button class="btn-refresh" (click)="loadAuditLog()">Yenile</button>
+      </div>
+      @if (loadingAudit) {
+        <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+      } @else if (auditError) {
+        <div class="empty-state"><div class="empty-icon">⚠️</div><h3>{{ auditError }}</h3></div>
+      } @else if (auditLog.length === 0) {
+        <div class="empty-state"><div class="empty-icon">📋</div><h3>Aktivite kaydı bulunamadı</h3></div>
+      } @else {
+        <div class="audit-list">
+          @for (entry of auditLog; track $index) {
+            <div class="audit-row" [class.audit-order]="entry.type==='order'" [class.audit-user]="entry.type==='user'">
+              <span class="audit-icon">{{ entry.icon }}</span>
+              <div class="audit-body">
+                <span class="audit-title">{{ entry.title }}</span>
+                <span class="audit-detail">{{ entry.detail }}</span>
+              </div>
+              <span class="audit-time">{{ entry.time ? (entry.time | date:'dd.MM.yyyy HH:mm') : '-' }}</span>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ══ DASHBOARD ANALYTİCS ══════════════════════════════════ -->
+    @if (activeTab === 'analytics') {
+      <div class="section-header">
+        <div><h2>📈 Dashboard Analytics</h2><p class="sub-text">{{ isAdmin ? 'Platform geneli analiz.' : 'Mağaza analiz özeti.' }}</p></div>
+        <div class="header-right">
+          <select class="date-range-select" [(ngModel)]="selectedDays" (change)="onDateRangeChange()">
+            @for (r of dateRanges; track r.value) { <option [value]="r.value">{{ r.label }}</option> }
+          </select>
+        </div>
+      </div>
+      @if (analyticsLoading) {
+        <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+      } @else {
+        <div class="kpi-container">
+          <div class="kpi-card">
+            <div class="kpi-top"><div class="icon-box" style="background:rgba(140,82,255,.1);color:#8c52ff">💰</div><span class="badge positive">{{ kpi.revenueGrowth }}</span></div>
+            <h3>{{ kpi.revenue }}</h3><p>Toplam Gelir</p>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><div class="icon-box" style="background:rgba(39,174,96,.1);color:#27ae60">📦</div><span class="badge positive">{{ kpi.ordersGrowth }}</span></div>
+            <h3>{{ kpi.orders }}</h3><p>Toplam Sipariş</p>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><div class="icon-box" style="background:rgba(52,152,219,.1);color:#3498db">👥</div><span class="badge positive">{{ kpi.customersGrowth }}</span></div>
+            <h3>{{ kpi.customers }}</h3><p>{{ isAdmin ? 'Toplam Müşteri' : 'Ürün Sayısı' }}</p>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><div class="icon-box" style="background:rgba(241,196,15,.1);color:#f39c12">⭐</div><span class="badge positive">{{ kpi.ratingGrowth }}</span></div>
+            <h3>{{ kpi.rating }}</h3><p>Ortalama Puan</p>
           </div>
         </div>
+        <div class="charts-row">
+          <div class="chart-box wide">
+            <h3>Satış Trendi</h3>
+            <div style="height:280px"><canvas baseChart [data]="salesChartData" [options]="salesChartOptions" [type]="'line'"></canvas></div>
+          </div>
+          <div class="chart-box">
+            <h3>Kategori Bazlı Gelir</h3>
+            <div style="height:280px"><canvas baseChart [data]="categoryChartData" [options]="categoryChartOptions" [type]="'doughnut'"></canvas></div>
+          </div>
+        </div>
+        <div class="segment-section">
+          <div class="segment-header">
+            <h3>Müşteri Segmentasyonu</h3>
+            <button class="segment-btn" (click)="loadSegments()" [disabled]="loadingSegments">{{ loadingSegments ? 'Yükleniyor...' : '📊 Analiz Et' }}</button>
+          </div>
+          @if (showSegments && segments) {
+            <div class="segment-grid">
+              <div class="seg-card"><div class="seg-icon" style="background:rgba(140,82,255,.1);color:#8c52ff">👤</div><div><h4>{{ segments.totalIndividual }}</h4><p>Bireysel Müşteri</p></div></div>
+              <div class="seg-card"><div class="seg-icon" style="background:rgba(39,174,96,.1);color:#27ae60">🏢</div><div><h4>{{ segments.totalCorporate }}</h4><p>Kurumsal Müşteri</p></div></div>
+              <div class="seg-card"><div class="seg-icon" style="background:rgba(52,152,219,.1);color:#3498db">🆕</div><div><h4>{{ segments.newCustomers30d }}</h4><p>Son 30 Günde Yeni</p></div></div>
+            </div>
+          }
+        </div>
+        <div class="charts-row">
+          <div class="chart-box">
+            <h3>Sipariş Durumu</h3>
+            <div style="height:230px"><canvas baseChart [data]="statusChartData" [options]="statusChartOptions" [type]="'bar'"></canvas></div>
+            <div class="status-summary">
+              <div class="status-item s-pending"><span class="dot"></span>Beklemede: {{ orderStatus.pending }}</div>
+              <div class="status-item s-shipped"><span class="dot"></span>Kargoda: {{ orderStatus.shipped }}</div>
+              <div class="status-item s-delivered"><span class="dot"></span>Teslim: {{ orderStatus.delivered }}</div>
+              <div class="status-item s-cancelled"><span class="dot"></span>İptal: {{ orderStatus.cancelled }}</div>
+            </div>
+          </div>
+          <div class="chart-box wide">
+            <h3>En Çok Satan Ürünler</h3>
+            @if (topProducts.length > 0) {
+              <table class="top-table">
+                <thead><tr><th>#</th><th>Ürün</th><th>Satış</th><th>Gelir</th></tr></thead>
+                <tbody>
+                  @for (p of topProducts; track p.name; let i = $index) {
+                    <tr><td>{{ i+1 }}</td><td>{{ p.name }}</td><td>{{ p.sold }}</td><td>${{ (p.revenue ?? 0).toFixed(2) }}</td></tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <div class="empty-note">Sipariş verisi bulunmuyor.</div>
+            }
+          </div>
+        </div>
+      }
+    }
 
-        <div class="chart-box wide">
-          <h3>En Çok Satan Ürünler</h3>
-          @if (topProducts.length > 0) {
-            <table class="top-table">
-              <thead><tr><th>#</th><th>Ürün</th><th>Satış</th><th>Gelir</th></tr></thead>
+    <!-- ══ ÜRÜNLER ════════════════════════════════════════════════ -->
+    @if (activeTab === 'products') {
+      <div class="section-header">
+        <div><h2>📦 Ürünler</h2><p class="sub-text">Ürün kataloğu</p></div>
+        <button class="btn-refresh" (click)="loadProducts()">Yenile</button>
+      </div>
+      <div class="filters-bar">
+        <input type="text" [(ngModel)]="productSearch" placeholder="Ürün veya kategori ara..." class="search-input">
+      </div>
+      @if (productsLoading) {
+        <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+      } @else if (filteredProducts.length === 0) {
+        <div class="empty-state"><div class="empty-icon">📦</div><h3>Ürün bulunamadı</h3></div>
+      } @else {
+        <div class="table-card">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Ürün Adı</th><th>Kategori</th><th>Fiyat</th><th>Stok</th><th>Puan</th></tr></thead>
+            <tbody>
+              @for (p of filteredProducts; track p.id; let i = $index) {
+                <tr>
+                  <td>{{ productPage * 20 + i + 1 }}</td>
+                  <td>
+                    <a [routerLink]="['/product', p.id]" class="product-link">{{ p.name }}</a>
+                  </td>
+                  <td>{{ p.category }}</td>
+                  <td>₺{{ p.price | number:'1.0-0' }}</td>
+                  <td [class.low-stock-cell]="p.stock < 10">{{ p.stock }}</td>
+                  <td>{{ p.rating?.toFixed(1) ?? '-' }} ⭐</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (productTotalPages > 1) {
+          <div class="pagination">
+            <button class="page-btn" (click)="productPrev()" [disabled]="productPage === 0">‹ Önceki</button>
+            <span class="page-info">Sayfa {{ productPage + 1 }} / {{ productTotalPages }}</span>
+            <button class="page-btn" (click)="productNext()" [disabled]="productPage >= productTotalPages - 1">Sonraki ›</button>
+          </div>
+        }
+      }
+    }
+
+    <!-- ══ SİPARİŞLER ════════════════════════════════════════════ -->
+    @if (activeTab === 'orders') {
+      <div class="section-header">
+        <div><h2>🛒 Siparişler</h2><p class="sub-text">Toplam {{ orderTotalElements }} sipariş</p></div>
+        <button class="export-btn" (click)="exportCsv()">⬇️ CSV İndir</button>
+      </div>
+      <div class="filters-bar">
+        <input type="text" [(ngModel)]="orderSearchText" placeholder="Sipariş no ara..." class="search-input">
+        <select [(ngModel)]="orderFilterStatus" class="filter-select">
+          <option value="">Tüm Durumlar</option>
+          @for (s of statuses; track s) { <option [value]="s">{{ orderStatusLabel(s) }}</option> }
+        </select>
+      </div>
+      @if (ordersLoading) {
+        <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+      } @else if (filteredOrders.length === 0) {
+        <div class="empty-state"><div style="font-size:60px">🛍️</div><h3>Sipariş bulunamadı</h3></div>
+      } @else {
+        <div class="orders-list">
+          @for (order of filteredOrders; track order.id) {
+            <div class="order-card">
+              <div class="order-header">
+                <div class="order-meta">
+                  <span class="order-num">{{ order.orderNumber }}</span>
+                  <span class="order-date">{{ order.orderDate | date:'dd.MM.yyyy' }}</span>
+                  @if (order.paymentMethod) { <span class="payment-badge">{{ order.paymentMethod }}</span> }
+                </div>
+                <span class="status-badge" [class]="orderStatusClass(order.status)">{{ orderStatusLabel(order.status) }}</span>
+              </div>
+              <div class="order-items">
+                @for (item of (order.items ?? []); track $index) {
+                  <div class="item-row">
+                    <div class="item-img">@if (item.imageUrl) { <img [src]="item.imageUrl" [alt]="item.productName"> } @else { <span>📦</span> }</div>
+                    <div class="item-info"><h4>{{ item.productName }}</h4><span>Adet: {{ item.quantity }}</span></div>
+                    <div class="item-price">${{ (item.unitPrice * item.quantity).toFixed(2) }}</div>
+                  </div>
+                }
+              </div>
+              <div class="order-footer">
+                <div class="price-breakdown">
+                  <div class="price-row"><span>Ara Toplam</span><span>${{ (order.totalAmount ?? 0).toFixed(2) }}</span></div>
+                  <div class="price-row"><span>Vergi (%8)</span><span>${{ ((order.totalAmount ?? 0) * 0.08).toFixed(2) }}</span></div>
+                  <div class="price-row total-row"><span>Genel Toplam</span><span>${{ ((order.totalAmount ?? 0) * 1.08).toFixed(2) }}</span></div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+        @if (orderTotalPages > 1) {
+          <div class="pagination">
+            <button class="page-btn" (click)="orderPrevPage()" [disabled]="orderPage === 0">‹ Önceki</button>
+            <span class="page-info">Sayfa {{ orderPage + 1 }} / {{ orderTotalPages }}</span>
+            <button class="page-btn" (click)="orderNextPage()" [disabled]="orderPage >= orderTotalPages - 1">Sonraki ›</button>
+          </div>
+        }
+      }
+    }
+
+    <!-- ══ MAĞAZA AYARLARI ═══════════════════════════════════════ -->
+    @if (activeTab === 'store-settings') {
+      @if (storeToast.visible) { <div class="toast" [class.toast-error]="storeToast.type==='error'">{{ storeToast.message }}</div> }
+      <div class="section-header">
+        <div><h2>⚙️ Mağaza Ayarları</h2><p class="sub-text">Mağaza bilgilerini yönetin</p></div>
+        <div style="display:flex;gap:10px">
+          <button class="btn-outline" (click)="loadLowStock()" [disabled]="loadingStock">{{ loadingStock ? '...' : '⚠️ Düşük Stok' }}</button>
+          @if (isCorporate) { <button class="btn-primary" (click)="settingsShowNewForm = !settingsShowNewForm">{{ settingsShowNewForm ? '✕ Kapat' : '+ Yeni Mağaza' }}</button> }
+        </div>
+      </div>
+      @if (showLowStock) {
+        <div class="alert-card">
+          <div class="alert-header"><h3>⚠️ Düşük Stoklu Ürünler</h3><button class="close-btn" (click)="showLowStock = false">✕</button></div>
+          @if (lowStockProducts.length === 0) { <p style="color:#888;margin:0">Tüm ürünler yeterli stokta.</p>
+          } @else {
+            <table class="stock-table">
+              <thead><tr><th>Ürün</th><th>SKU</th><th>Stok</th><th>Durum</th></tr></thead>
               <tbody>
-                @for (p of topProducts; track p.name; let i = $index) {
-                  <tr>
-                    <td>{{ i + 1 }}</td>
-                    <td>{{ p.name }}</td>
-                    <td>{{ p.sold }}</td>
-                    <td>${{ (p.revenue ?? 0).toFixed(2) }}</td>
+                @for (p of lowStockProducts; track p.id) {
+                  <tr><td>{{ p.name }}</td><td>{{ p.sku ?? '-' }}</td><td>{{ p.stock }}</td>
+                    <td><span class="stock-badge" [class]="stockClass(p.stock)">{{ p.stock === 0 ? 'Tükendi' : p.stock <= 5 ? 'Kritik' : 'Düşük' }}</span></td>
                   </tr>
                 }
               </tbody>
             </table>
-          } @else {
-            <div class="empty-note">Sipariş verisi bulunmuyor. Siparişler oluşturuldukça burada görünecek.</div>
           }
         </div>
-      </div>
-
+      }
+      @if (settingsShowNewForm && isCorporate) {
+        <div class="form-card">
+          <h3>Yeni Mağaza Oluştur</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Mağaza Adı *</label><input type="text" [(ngModel)]="settingsNewForm.name" placeholder="Mağaza adı"></div>
+            <div class="form-group"><label>E-posta</label><input type="email" [(ngModel)]="settingsNewForm.email" placeholder="iletisim@magaza.com"></div>
+            <div class="form-group"><label>Adres</label><input type="text" [(ngModel)]="settingsNewForm.address" placeholder="Mağaza adresi"></div>
+            <div class="form-group"><label>Açıklama</label><input type="text" [(ngModel)]="settingsNewForm.description" placeholder="Kısa açıklama"></div>
+          </div>
+          <button class="btn-primary" (click)="createStore()" [disabled]="settingsCreating || !settingsNewForm.name">{{ settingsCreating ? 'Oluşturuluyor...' : 'Oluştur' }}</button>
+        </div>
+      }
+      @if (settingsLoading) {
+        <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+      } @else if (settingsStores.length === 0) {
+        <div class="empty-state"><div class="empty-icon">🏪</div><h3>Henüz mağaza kaydı yok</h3></div>
+      } @else {
+        <div class="stores-grid">
+          @for (store of settingsStores; track store.id) {
+            <div class="store-card">
+              @if (settingsEditingStore?.id === store.id) {
+                <div class="edit-mode">
+                  <h4>Mağaza Düzenle</h4>
+                  <div class="form-group"><label>Ad</label><input type="text" [(ngModel)]="settingsEditForm.name"></div>
+                  @if (isCorporate) {
+                    <div class="form-group"><label>E-posta</label><input type="email" [(ngModel)]="settingsEditForm.email"></div>
+                  } @else {
+                    <div class="form-group"><label>E-posta</label><input type="email" [value]="settingsEditForm.email" disabled style="background:#f5f5f5;color:#999;cursor:not-allowed"></div>
+                  }
+                  <div class="form-group"><label>Adres</label><input type="text" [(ngModel)]="settingsEditForm.address"></div>
+                  <div class="form-group"><label>Açıklama</label><input type="text" [(ngModel)]="settingsEditForm.description"></div>
+                  <div class="edit-actions">
+                    <button class="btn-primary sm" (click)="saveEdit()" [disabled]="settingsSaving">{{ settingsSaving ? '...' : 'Kaydet' }}</button>
+                    <button class="btn-outline sm" (click)="settingsEditingStore = null">İptal</button>
+                  </div>
+                </div>
+              } @else {
+                <div class="store-header">
+                  <div class="store-icon">🏪</div>
+                  <div class="store-info"><h3>{{ store.name }}</h3><span class="store-owner">{{ store.owner?.fullName ?? store.ownerName ?? '-' }}</span></div>
+                  <span class="status-badge" [class.active]="store.open !== false">{{ store.open !== false ? 'Aktif' : 'Pasif' }}</span>
+                </div>
+                <div class="store-details">
+                  <div class="detail-row"><span class="detail-label">E-posta</span><span>{{ store.email ?? store.owner?.email ?? '-' }}</span></div>
+                  <div class="detail-row"><span class="detail-label">Adres</span><span>{{ store.address ?? '-' }}</span></div>
+                  <div class="detail-row"><span class="detail-label">Ürün Sayısı</span><span>{{ store.productCount ?? store.products?.length ?? 0 }}</span></div>
+                </div>
+                <div class="card-actions">
+                  <button class="action-btn edit" (click)="startEdit(store)">✏️ Düzenle</button>
+                  @if (isAdmin) { <button class="action-btn toggle" (click)="toggleSettingsStore(store)">{{ store.open !== false ? '🔴 Kapat' : '🟢 Aç' }}</button> }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
     }
+
+    <!-- ══ KARGOLAR ═══════════════════════════════════════════════ -->
+    @if (activeTab === 'shipments') {
+      <div class="section-header">
+        <div><h2>🚚 Kargolar</h2><p class="sub-text">Toplam {{ shipments.length }} kargo</p></div>
+        <button class="btn-refresh" (click)="loadShipments()">Yenile</button>
+      </div>
+      @if (shipmentsLoading) {
+        <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
+      } @else if (shipments.length === 0) {
+        <div class="empty-state"><div class="empty-icon">📦</div><h3>Henüz kargo kaydı yok</h3></div>
+      } @else {
+        <div class="table-card">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Kargo No</th><th>Sipariş</th><th>Müşteri</th><th>Kargo Firması</th><th>Durum</th><th>Tarih</th></tr></thead>
+            <tbody>
+              @for (s of shipments; track s.id; let i = $index) {
+                <tr>
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ s.trackingNumber ?? '-' }}</td>
+                  <td>#{{ s.orderId ?? '-' }}</td>
+                  <td>{{ s.customerName ?? '-' }}</td>
+                  <td>{{ s.carrier ?? s.modeOfShipment ?? 'Yurtiçi Kargo' }}</td>
+                  <td><span class="status-badge" [class]="shipmentStatusClass(s.status)">{{ shipmentStatusLabel(s.status) }}</span></td>
+                  <td>{{ s.orderDate ? (s.orderDate | date:'dd.MM.yyyy') : (s.shippedDate ? (s.shippedDate | date:'dd.MM.yyyy') : '-') }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
+    <!-- ══ AI ASİSTAN ════════════════════════════════════════════ -->
+    @if (activeTab === 'ai') {
+      <div class="section-header">
+        <div><h2>🤖 AI Asistan</h2><p class="sub-text">Akıllı iş asistanınız</p></div>
+      </div>
+      <div class="ai-redirect-card">
+        <div class="ai-icon-big">🤖</div>
+        <h3>AI Asistan</h3>
+        <p>Ürün önerileri, satış analizi, müşteri segmentasyonu ve daha fazlası için AI Asistanı kullanın.</p>
+        <a routerLink="/ai-assistant" class="btn-primary" style="display:inline-block;text-decoration:none;padding:12px 28px;border-radius:10px;">AI Asistanı Aç →</a>
+      </div>
+    }
+
   </main>
 </div>

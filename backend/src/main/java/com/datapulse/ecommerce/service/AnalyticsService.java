@@ -37,8 +37,9 @@ public class AnalyticsService {
         LocalDateTime thirtyAgo = now.minusDays(days);
         LocalDateTime sixtyAgo  = now.minusDays(days * 2);
 
-        BigDecimal curRev  = nullSafe(orderRepository.sumRevenueByDateRange(thirtyAgo, now));
-        BigDecimal prevRev = nullSafe(orderRepository.sumRevenueByDateRange(sixtyAgo, thirtyAgo));
+        // Tüm platform geliri — item bazlı (store geliriyle tutarlı)
+        BigDecimal curRev  = nullSafe(orderRepository.sumItemRevenueByDateRange(thirtyAgo, now));
+        BigDecimal prevRev = nullSafe(orderRepository.sumItemRevenueByDateRange(sixtyAgo, thirtyAgo));
 
         long totalOrders = orderRepository.count();
         long curOrders   = orderRepository.findByDateRange(thirtyAgo, now).size();

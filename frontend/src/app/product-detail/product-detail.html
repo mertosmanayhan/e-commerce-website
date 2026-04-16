@@ -20,12 +20,14 @@
       <span class="highlight">Data</span>Pulse <span class="logo-sub">| Store</span>
     </a>
     <div class="nav-actions">
-      <a routerLink="/cart" class="cart-btn">
-        🛒 Sepetim
-        @if (cartCount > 0) {
-          <span class="cart-badge">{{ cartCount }}</span>
-        }
-      </a>
+      @if (currentUser?.role !== 'CORPORATE' && currentUser?.role !== 'ADMIN') {
+        <a routerLink="/cart" class="cart-btn">
+          🛒 Sepetim
+          @if (cartCount > 0) {
+            <span class="cart-badge">{{ cartCount }}</span>
+          }
+        </a>
+      }
       @if (!isAuth) {
         <button class="login-btn" routerLink="/login">Giriş Yap</button>
       } @else {
@@ -65,7 +67,7 @@
     <!-- Product Info -->
     <div class="info-section">
       <div class="product-meta">
-        <span class="brand-tag">DataPulse</span>
+        <span class="brand-tag">{{ product.storeName || 'DataPulse' }}</span>
         <span class="category-tag">{{ product.category }}</span>
       </div>
 
@@ -129,9 +131,11 @@
           <button class="qty-btn" (click)="quantity = quantity + 1">+</button>
         </div>
 
-        <button class="btn-cart" (click)="addToCart()">
-          🛒 Sepete Ekle
-        </button>
+        @if (currentUser?.role !== 'CORPORATE' && currentUser?.role !== 'ADMIN') {
+          <button class="btn-cart" (click)="addToCart()">
+            🛒 Sepete Ekle
+          </button>
+        }
 
         <button class="btn-wishlist" [class.active]="isFavorite" (click)="toggleWishlist()" title="Favorilere Ekle">
           {{ isFavorite ? '❤️' : '🤍' }}
@@ -256,9 +260,60 @@
                   </div>
                 </div>
                 <p class="review-text">{{ review.text }}</p>
+                <!-- Mağaza yanıtı (sadece okuma) -->
+                @if (review.corporateResponse && !review.showReplyForm) {
+                  <div class="corp-response-box">
+                    <span class="corp-response-label">🏢 Mağaza Yanıtı:</span>
+                    <p class="corp-response-text">{{ review.corporateResponse }}</p>
+                  </div>
+                }
+
+                <!-- Mağaza sahibi / admin yanıt formu -->
+                @if ((currentUser?.role === 'CORPORATE' || currentUser?.role === 'ADMIN') && !review.corporateResponse) {
+                  <div class="corp-edit-box">
+                    <textarea [(ngModel)]="review.replyText" rows="2" placeholder="Bu yoruma mağaza yanıtı yazın..." class="corp-edit-textarea"></textarea>
+                    <button class="corp-save-btn" (click)="respondToReview(review, review.replyText || '')" [disabled]="!review.replyText?.trim()">Yanıtı Kaydet</button>
+                  </div>
+                }
+
+                <!-- Kullanıcı yanıtları (replies) -->
+                @if (review.replies && review.replies.length > 0) {
+                  <div class="replies-list">
+                    @for (reply of review.replies; track reply.id) {
+                      <div class="reply-item">
+                        <div class="reply-avatar">{{ reply.avatar }}</div>
+                        <div class="reply-body">
+                          <span class="reply-author">{{ reply.author }}</span>
+                          <span class="reply-date">{{ reply.date }}</span>
+                          <p class="reply-text">{{ reply.text }}</p>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- Yanıt yaz formu (giriş yapmış herkes) -->
+                @if (isAuth) {
+                  @if (!review.showReplyForm) {
+                    <button class="reply-toggle-btn" (click)="review.showReplyForm = true">💬 Yanıtla</button>
+                  } @else {
+                    <div class="reply-form">
+                      <textarea [(ngModel)]="review.replyText" rows="2" placeholder="Yoruma yanıt yaz..." class="reply-textarea"></textarea>
+                      <div class="reply-form-actions">
+                        <button class="reply-submit-btn" (click)="submitReply(review)" [disabled]="review.submittingReply || !review.replyText?.trim()">
+                          {{ review.submittingReply ? 'Gönderiliyor...' : 'Gönder' }}
+                        </button>
+                        <button class="reply-cancel-btn" (click)="review.showReplyForm = false; review.replyText = ''">İptal</button>
+                      </div>
+                    </div>
+                  }
+                }
+
                 <div class="review-footer">
                   <span class="helpful-text">Bu yorum faydalı mı?</span>
-                  <button class="helpful-btn">👍 Evet ({{ review.helpfulCount }})</button>
+                  <button class="helpful-btn" (click)="voteHelpful(review)" [disabled]="review.voted" [class.voted]="review.voted">
+                    👍 Evet ({{ review.helpfulCount }})
+                  </button>
                 </div>
               </div>
             }

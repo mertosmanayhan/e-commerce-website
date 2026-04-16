@@ -28,6 +28,7 @@ public class ProductService {
     public Page<ProductResponse> getProductsByCategory(Long catId, Pageable p) { return productRepository.findByCategoryId(catId, p).map(ProductResponse::fromEntity); }
     public Page<ProductResponse> getProductsByStore(Long storeId, Pageable p) { return productRepository.findByStoreId(storeId, p).map(ProductResponse::fromEntity); }
     public List<ProductResponse> getLowStockProducts(Integer threshold) { return productRepository.findByStockLessThan(threshold).stream().map(ProductResponse::fromEntity).toList(); }
+    public Page<ProductResponse> getProductsByStoreOwner(Long ownerId, Pageable p) { return productRepository.findByStoreOwnerId(ownerId, p).map(ProductResponse::fromEntity); }
 
     @Transactional public ProductResponse createProduct(ProductRequest req) {
         Product p = Product.builder().name(req.getName()).description(req.getDescription()).sku(req.getSku())
