@@ -33,22 +33,20 @@ public class AnalyticsService {
 
     public DashboardResponse getDashboardData() { return getDashboardData(30); }
     public DashboardResponse getDashboardData(int days) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime thirtyAgo = now.minusDays(days);
-        LocalDateTime sixtyAgo  = now.minusDays(days * 2);
+        LocalDateTime now      = LocalDateTime.now();
+        LocalDateTime curStart = now.minusDays(days);
+        LocalDateTime prevStart = now.minusDays(days * 2L);
 
-        // Tüm platform geliri — item bazlı (store geliriyle tutarlı)
-        BigDecimal curRev  = nullSafe(orderRepository.sumItemRevenueByDateRange(thirtyAgo, now));
-        BigDecimal prevRev = nullSafe(orderRepository.sumItemRevenueByDateRange(sixtyAgo, thirtyAgo));
+        BigDecimal curRev  = nullSafe(orderRepository.sumItemRevenueByDateRange(curStart, now));
+        BigDecimal prevRev = nullSafe(orderRepository.sumItemRevenueByDateRange(prevStart, curStart));
 
-        long totalOrders = orderRepository.count();
-        long curOrders   = orderRepository.findByDateRange(thirtyAgo, now).size();
-        long prevOrders  = orderRepository.findByDateRange(sixtyAgo, thirtyAgo).size();
+        long curOrders  = nullSafe(orderRepository.countByDateRange(curStart, now));
+        long prevOrders = nullSafe(orderRepository.countByDateRange(prevStart, curStart));
 
-        long pending   = nullSafe(orderRepository.countByStatus(OrderStatus.PENDING));
-        long shipped   = nullSafe(orderRepository.countByStatus(OrderStatus.SHIPPED));
-        long delivered = nullSafe(orderRepository.countByStatus(OrderStatus.DELIVERED));
-        long cancelled = nullSafe(orderRepository.countByStatus(OrderStatus.CANCELLED));
+        long pending   = nullSafe(orderRepository.countByStatusAndDateRange(OrderStatus.PENDING,   curStart, now));
+        long shipped   = nullSafe(orderRepository.countByStatusAndDateRange(OrderStatus.SHIPPED,   curStart, now));
+        long delivered = nullSafe(orderRepository.countByStatusAndDateRange(OrderStatus.DELIVERED, curStart, now));
+        long cancelled = nullSafe(orderRepository.countByStatusAndDateRange(OrderStatus.CANCELLED, curStart, now));
 
         double avgRating = productRepository.findAll().stream()
                 .filter(p -> p.getRating() != null && p.getRating() > 0)
@@ -57,7 +55,7 @@ public class AnalyticsService {
         return DashboardResponse.builder()
                 .totalRevenue(curRev)
                 .revenueGrowth(calcGrowth(prevRev, curRev))
-                .totalOrders(totalOrders)
+                .totalOrders(curOrders)
                 .ordersGrowth(calcGrowthL(prevOrders, curOrders))
                 .totalCustomers(userRepository.count())
                 .customersGrowth("+0%")
@@ -91,22 +89,22 @@ public class AnalyticsService {
         }
 
         Long storeId = stores.get(0).getId();
-        LocalDateTime now       = LocalDateTime.now();
-        LocalDateTime thirtyAgo = now.minusDays(days);
-        LocalDateTime sixtyAgo  = now.minusDays(days * 2);
+        LocalDateTime now      = LocalDateTime.now();
+        LocalDateTime curStart = now.minusDays(days);
+        LocalDateTime prevStart = now.minusDays(days * 2L);
 
-        BigDecimal curRev  = nullSafe(orderRepository.sumRevenueByStoreAndDateRange(storeId, thirtyAgo, now));
-        BigDecimal prevRev = nullSafe(orderRepository.sumRevenueByStoreAndDateRange(storeId, sixtyAgo, thirtyAgo));
+        BigDecimal curRev  = nullSafe(orderRepository.sumRevenueByStoreAndDateRange(storeId, curStart, now));
+        BigDecimal prevRev = nullSafe(orderRepository.sumRevenueByStoreAndDateRange(storeId, prevStart, curStart));
 
-        long curOrders  = nullSafe(orderRepository.countOrdersByStoreAndDateRange(storeId, thirtyAgo, now));
-        long prevOrders = nullSafe(orderRepository.countOrdersByStoreAndDateRange(storeId, sixtyAgo, thirtyAgo));
-        long totalOrders = nullSafe(orderRepository.countOrdersByStoreAndDateRange(storeId,
-                LocalDateTime.of(2000, 1, 1, 0, 0), now));
+        long curOrders  = nullSafe(orderRepository.countOrdersByStoreAndDateRange(storeId, curStart, now));
+        long prevOrders = nullSafe(orderRepository.countOrdersByStoreAndDateRange(storeId, prevStart, curStart));
 
-        long pending   = nullSafe(orderRepository.countByStoreAndStatus(storeId, OrderStatus.PENDING));
-        long shipped   = nullSafe(orderRepository.countByStoreAndStatus(storeId, OrderStatus.SHIPPED));
-        long delivered = nullSafe(orderRepository.countByStoreAndStatus(storeId, OrderStatus.DELIVERED));
-        long cancelled = nullSafe(orderRepository.countByStoreAndStatus(storeId, OrderStatus.CANCELLED));
+        long pending   = nullSafe(orderRepository.countByStoreAndStatusAndDateRange(storeId, OrderStatus.PENDING,   curStart, now));
+        long shipped   = nullSafe(orderRepository.countByStoreAndStatusAndDateRange(storeId, OrderStatus.SHIPPED,   curStart, now));
+        long delivered = nullSafe(orderRepository.countByStoreAndStatusAndDateRange(storeId, OrderStatus.DELIVERED, curStart, now));
+        long cancelled = nullSafe(orderRepository.countByStoreAndStatusAndDateRange(storeId, OrderStatus.CANCELLED, curStart, now));
+
+        long customers = nullSafe(orderRepository.countDistinctCustomersByStoreAndDateRange(storeId, curStart, now));
 
         // Mağazanın ürünlerinin ortalama puanı
         double avgRating = stores.get(0).getProducts().stream()
@@ -145,9 +143,9 @@ public class AnalyticsService {
         return DashboardResponse.builder()
                 .totalRevenue(curRev)
                 .revenueGrowth(calcGrowth(prevRev, curRev))
-                .totalOrders(totalOrders)
+                .totalOrders(curOrders)
                 .ordersGrowth(calcGrowthL(prevOrders, curOrders))
-                .totalCustomers((long) stores.get(0).getProducts().size()) // ürün sayısını göster
+                .totalCustomers(customers)
                 .customersGrowth("+0%")
                 .averageRating(Math.round(avgRating * 10.0) / 10.0)
                 .ratingGrowth("+0.0")

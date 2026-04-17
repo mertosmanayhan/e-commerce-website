@@ -31,6 +31,11 @@ public class ReviewService {
     }
 
     @Transactional(readOnly=true)
+    public List<ReviewResponse> getReviewsByUser(Long userId) {
+        return reviewRepository.findByUserId(userId).stream().map(ReviewResponse::fromEntity).toList();
+    }
+
+    @Transactional(readOnly=true)
     public List<ReviewResponse> getReviewsByStoreOwner(Long ownerId) {
         return reviewRepository.findByStoreOwnerId(ownerId).stream().map(ReviewResponse::fromEntity).toList();
     }

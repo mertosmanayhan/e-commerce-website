@@ -32,6 +32,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT COUNT(o) FROM Order o WHERE o.status = :status")
     Long countByStatus(@Param("status") OrderStatus status);
 
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.status = :status AND o.orderDate BETWEEN :start AND :end")
+    Long countByStatusAndDateRange(@Param("status") OrderStatus status,
+                                   @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.orderDate BETWEEN :start AND :end")
+    Long countByDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
     @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.orderDate BETWEEN :start AND :end")
     BigDecimal sumRevenueByDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
@@ -55,8 +62,23 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                                         @Param("end") LocalDateTime end);
 
     @Query("SELECT COUNT(DISTINCT o.id) FROM Order o JOIN o.items oi JOIN oi.product p " +
+           "WHERE p.store.id = :storeId AND o.status = :status AND o.orderDate BETWEEN :start AND :end")
+    Long countByStoreAndStatusAndDateRange(@Param("storeId") Long storeId, @Param("status") OrderStatus status,
+                                           @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(DISTINCT o.id) FROM Order o JOIN o.items oi JOIN oi.product p " +
            "WHERE p.store.id = :storeId AND o.status = :status")
     Long countByStoreAndStatus(@Param("storeId") Long storeId, @Param("status") OrderStatus status);
+
+    @Query("SELECT COUNT(DISTINCT o.user.id) FROM Order o JOIN o.items oi JOIN oi.product p " +
+           "WHERE p.store.id = :storeId AND o.orderDate BETWEEN :start AND :end")
+    Long countDistinctCustomersByStoreAndDateRange(@Param("storeId") Long storeId,
+                                                   @Param("start") LocalDateTime start,
+                                                   @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(DISTINCT o.user.id) FROM Order o JOIN o.items oi JOIN oi.product p " +
+           "WHERE p.store.id = :storeId")
+    Long countDistinctCustomersByStore(@Param("storeId") Long storeId);
 
     @Query(value = "SELECT DATE(o.order_date) as day, SUM(o.total_amount) as revenue " +
                    "FROM orders o JOIN order_items oi ON o.id = oi.order_id " +

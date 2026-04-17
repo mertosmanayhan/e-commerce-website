@@ -16,47 +16,72 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
-@Configuration @EnableWebSecurity @EnableMethodSecurity
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
+
     private final CustomUserDetailsService customUserDetailsService;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter  jwtAuthenticationFilter;
 
-    public SecurityConfig(CustomUserDetailsService cuds, JwtAuthenticationFilter jaf) {
-        this.customUserDetailsService = cuds; this.jwtAuthenticationFilter = jaf;
+    public SecurityConfig(CustomUserDetailsService customUserDetailsService,
+                          JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.customUserDetailsService = customUserDetailsService;
+        this.jwtAuthenticationFilter  = jwtAuthenticationFilter;
     }
 
-    @Bean public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
-
-    @Bean public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider p = new DaoAuthenticationProvider();
-        p.setUserDetailsService(customUserDetailsService); p.setPasswordEncoder(passwordEncoder()); return p;
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
-    @Bean public AuthenticationManager authenticationManager(AuthenticationConfiguration c) throws Exception { return c.getAuthenticationManager(); }
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(customUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
 
-    @Bean public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
+            throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(request -> {
-                var c = new org.springframework.web.cors.CorsConfiguration();
-                c.addAllowedOrigin("http://localhost:4200"); c.addAllowedOrigin("http://localhost:4201");
-                c.addAllowedMethod("*"); c.addAllowedHeader("*"); c.setAllowCredentials(true); c.setMaxAge(3600L); return c;
+                CorsConfiguration config = new CorsConfiguration();
+                config.addAllowedOrigin("http://localhost:4200");
+                config.addAllowedOrigin("http://localhost:4201");
+                config.addAllowedMethod("*");
+                config.addAllowedHeader("*");
+                config.setAllowCredentials(true);
+                config.setMaxAge(3600L);
+                return config;
             }))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/error").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/reviews/product/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/users/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/products/**").hasAnyRole("CORPORATE", "ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyRole("CORPORATE", "ADMIN")
+                .requestMatchers(HttpMethod.POST,   "/api/products/**").hasAnyRole("CORPORATE", "ADMIN")
+                .requestMatchers(HttpMethod.PUT,    "/api/products/**").hasAnyRole("CORPORATE", "ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyRole("CORPORATE", "ADMIN")
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 }

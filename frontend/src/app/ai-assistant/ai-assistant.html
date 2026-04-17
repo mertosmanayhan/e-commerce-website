@@ -1,22 +1,22 @@
-<div class="page-layout">
+<div class="page-layout" [class.theme-admin]="isAdmin" [class.theme-corp]="isCorp" [class.theme-individual]="isIndividual">
 
-  <!-- Sidebar -->
+  <!-- ── Sidebar ── -->
   <aside class="sidebar">
     <div class="sidebar-logo"><span class="highlight">Data</span>Pulse</div>
 
     <div class="menu-section">
       <p class="menu-label">ANA MENÜ</p>
       <a routerLink="/dashboard"    routerLinkActive="active" class="menu-item"><span class="menu-icon">🏠</span> Dashboard</a>
-      <a routerLink="/analytics"    routerLinkActive="active" class="menu-item"><span class="menu-icon">📊</span> Analytics</a>
       <a routerLink="/ai-assistant" routerLinkActive="active" class="menu-item"><span class="menu-icon">🤖</span> AI Assistant <span class="menu-badge">New</span></a>
+      <a routerLink="/analytics"    routerLinkActive="active" class="menu-item"><span class="menu-icon">📊</span> Analytics</a>
       <a routerLink="/orders"       routerLinkActive="active" class="menu-item"><span class="menu-icon">🛒</span> Siparişler</a>
       <a routerLink="/products"     routerLinkActive="active" class="menu-item"><span class="menu-icon">📦</span> Ürünler</a>
     </div>
 
     <div class="menu-section">
       <p class="menu-label">YÖNETİM</p>
-      @if (isAdmin) {
-        <a routerLink="/customers"     routerLinkActive="active" class="menu-item"><span class="menu-icon">👥</span> Müşteriler</a>
+      @if (isAdmin || isCorp) {
+        <a routerLink="/customers"      routerLinkActive="active" class="menu-item"><span class="menu-icon">👥</span> Müşteriler</a>
         <a routerLink="/store-settings" routerLinkActive="active" class="menu-item"><span class="menu-icon">🏪</span> Mağaza Ayarları</a>
       }
       <a routerLink="/shipments"    routerLinkActive="active" class="menu-item"><span class="menu-icon">🚚</span> Kargolar</a>
@@ -38,71 +38,188 @@
     </div>
   </aside>
 
-  <!-- Main -->
+  <!-- ── Main ── -->
   <main class="main-content">
+
     <div class="page-header">
       <div>
-        <h1>🤖 AI Assistant</h1>
-        <p class="sub">Doğal dille e-ticaret verilerinizi sorgulayın (Text2SQL)</p>
+        <h1 class="page-title">
+          @if (isAdmin) { <span class="title-icon">⚙️</span> }
+          @else if (isCorp) { <span class="title-icon">🏪</span> }
+          @else { <span class="title-icon">🤖</span> }
+          @if (isAdmin) { Admin AI Asistanı }
+          @else if (isCorp) { Mağaza AI Asistanı }
+          @else { Kişisel AI Asistanı }
+          <span class="online-dot" title="Online"></span>
+          <span class="role-header-badge" [class.badge-admin]="isAdmin" [class.badge-corp]="isCorp" [class.badge-individual]="isIndividual">
+            @if (isAdmin) { 🔴 ADMIN — Tam Erişim }
+            @else if (isCorp) { 🟣 CORPORATE — Mağaza Erişimi }
+            @else { 🔵 INDIVIDUAL — Kişisel Erişim }
+          </span>
+        </h1>
+        <p class="page-sub">
+          @if (isAdmin) { Tüm mağazalar, kullanıcılar ve platform verilerine erişebilirsiniz – LangGraph Multi-Agent Text2SQL }
+          @else if (isCorp) { Kendi mağazanızın ürün, sipariş, müşteri ve satış verilerini sorgulayın }
+          @else { Kendi siparişlerinizi, harcamalarınızı ve yorumlarınızı sorgulayın }
+        </p>
       </div>
     </div>
 
     <div class="chat-layout">
 
-      <!-- Sol: Sohbet -->
+      <!-- ── Chat Panel ── -->
       <div class="chat-panel">
         <div class="messages-area" #chatScroll>
+
           @for (msg of messages; track $index) {
-            <div class="message-row" [class.user-row]="msg.sender === 'user'">
-              <div class="message-bubble" [class.user-bubble]="msg.sender === 'user'" [class.ai-bubble]="msg.sender === 'ai'">
-                <div [innerHTML]="formatText(msg.text)"></div>
-                @if (msg.sql) {
-                  <div class="sql-block">
-                    <span class="sql-label">SQL</span>
-                    <code>{{ msg.sql }}</code>
-                  </div>
-                }
+
+            <!-- USER -->
+            @if (msg.sender === 'user') {
+              <div class="msg-row user-row">
+                <div class="user-bubble">
+                  <span [innerHTML]="formatText(msg.text)"></span>
+                </div>
+                <div class="avatar user-avatar">{{ (user?.fullName ?? 'U')[0] }}</div>
               </div>
-            </div>
-          }
-          @if (loading) {
-            <div class="message-row">
-              <div class="ai-bubble message-bubble typing">
-                <span></span><span></span><span></span>
+            }
+
+            <!-- AI -->
+            @if (msg.sender === 'ai') {
+              <div class="msg-row ai-row">
+                <div class="avatar ai-avatar">🤖</div>
+                <div class="ai-bubble-wrap">
+
+                  <!-- LOADING STATE — thinking animation only -->
+                  @if (msg.loading) {
+                    <div class="ai-bubble thinking-bubble">
+                      <div class="thinking-row">
+                        <div class="thinking-dots">
+                          <span></span><span></span><span></span>
+                        </div>
+                        <span class="thinking-text">{{ msg.thinkingText }}</span>
+                      </div>
+                    </div>
+                  }
+
+                  <!-- COMPLETED STATE -->
+                  @if (!msg.loading && msg.text) {
+                    <div class="ai-bubble">
+                      <!-- Answer text -->
+                      <div class="answer-text" [innerHTML]="formatText(msg.text)"></div>
+
+                      <!-- Chart -->
+                      @if (msg.plotData && msg.chartId) {
+                        <div class="chart-container">
+                          <div [id]="msg.chartId" class="plotly-chart"></div>
+                        </div>
+                      }
+
+                      <!-- SQL (collapsible) -->
+                      @if (msg.sql) {
+                        <details class="sql-details">
+                          <summary class="sql-summary">
+                            <span class="sql-badge">SQL</span>
+                            Oluşturulan sorguyu göster
+                          </summary>
+                          <div class="sql-block">
+                            <code>{{ msg.sql }}</code>
+                          </div>
+                        </details>
+                      }
+                    </div>
+                  }
+
+                </div>
               </div>
-            </div>
+            }
           }
+
         </div>
 
+        <!-- Input -->
         <div class="input-area">
           <input
             [(ngModel)]="userQuery"
             (keyup.enter)="sendMessage()"
-            placeholder="Soru sorun... (Enter ile gönderin)"
+            placeholder="Soru sorun... (örn: 'Kategori bazlı gelir analizi')"
             class="chat-input"
             [disabled]="loading" />
           <button class="send-btn" (click)="sendMessage()" [disabled]="loading || !userQuery.trim()">
-            Gönder →
+            @if (loading) { <span class="send-spinner"></span> }
+            @else         { <span>▶</span> }
           </button>
         </div>
       </div>
 
-      <!-- Sağ: Öneriler -->
-      <div class="suggestions-panel">
-        <h3>Örnek Sorular</h3>
-        <div class="suggestion-list">
-          @for (s of suggestions; track $index) {
-            <button class="suggestion-btn" (click)="useSuggestion(s)">{{ s }}</button>
+      <!-- ── Right Sidebar ── -->
+      <div class="right-sidebar">
+
+        <div class="sidebar-card suggestions-card">
+          <h3 class="card-title">
+            @if (isAdmin) { ⚙️ Admin Sorgu Örnekleri }
+            @else if (isCorp) { 🏪 Mağaza Sorgu Örnekleri }
+            @else { 💡 Kişisel Sorgu Örnekleri }
+          </h3>
+          <div class="suggestion-list">
+            @for (s of suggestions; track $index) {
+              <button class="suggestion-btn" (click)="useSuggestion(s)" [disabled]="loading">{{ s }}</button>
+            }
+          </div>
+        </div>
+
+        <div class="sidebar-card how-it-works">
+          <h3 class="card-title">⚙️ Nasıl Çalışır?</h3>
+          <div class="flow-step"><span class="flow-num">1</span><span>Soruyu doğal dilde yazın</span></div>
+          <div class="flow-step"><span class="flow-num">2</span><span>Guardrails Agent kapsam denetler</span></div>
+          <div class="flow-step"><span class="flow-num">3</span><span>SQL Agent sorgu üretir</span></div>
+          <div class="flow-step"><span class="flow-num">4</span><span>Veritabanı güvenli sorgulanır</span></div>
+          <div class="flow-step"><span class="flow-num">5</span><span>Analysis Agent yorumlar</span></div>
+          <div class="flow-step"><span class="flow-num">6</span><span>Visualization Agent grafik oluşturur</span></div>
+        </div>
+
+        <div class="sidebar-card agents-card">
+          <h3 class="card-title">🧠 Aktif Agentlar</h3>
+          <div class="agent-item"><span class="agent-dot green"></span>Guardrails Agent</div>
+          <div class="agent-item"><span class="agent-dot purple"></span>SQL Agent</div>
+          <div class="agent-item"><span class="agent-dot blue"></span>Error Agent</div>
+          <div class="agent-item"><span class="agent-dot cyan"></span>Analysis Agent</div>
+          <div class="agent-item"><span class="agent-dot orange"></span>Visualization Agent</div>
+        </div>
+
+        <!-- Role badge -->
+        <div class="sidebar-card role-card">
+          <h3 class="card-title">🔐 Veri Erişim Kapsamı</h3>
+          @if (isAdmin) {
+            <div class="role-badge admin">ADMIN — Tüm platform verisi</div>
+            <div class="scope-list">
+              <div class="scope-item">✅ Tüm mağaza verileri</div>
+              <div class="scope-item">✅ Tüm kullanıcılar</div>
+              <div class="scope-item">✅ Platform geneli istatistikler</div>
+              <div class="scope-item">✅ Tüm siparişler ve gelirler</div>
+            </div>
+          } @else if (isCorp) {
+            <div class="role-badge corp">CORPORATE — Kendi mağaza verisi</div>
+            <div class="scope-list">
+              <div class="scope-item">✅ Kendi mağaza ürünleri</div>
+              <div class="scope-item">✅ Kendi mağaza siparişleri</div>
+              <div class="scope-item">✅ Mağaza müşterileri</div>
+              <div class="scope-item">✅ Mağaza satış verileri</div>
+              <div class="scope-item">❌ Diğer mağaza verileri</div>
+              <div class="scope-item">❌ Tüm platform verileri</div>
+            </div>
+          } @else {
+            <div class="role-badge individual">INDIVIDUAL — Kişisel veriler</div>
+            <div class="scope-list">
+              <div class="scope-item">✅ Kendi siparişlerim</div>
+              <div class="scope-item">✅ Kendi harcamalarım</div>
+              <div class="scope-item">✅ Kendi yorumlarım</div>
+              <div class="scope-item">❌ Diğer kullanıcı verileri</div>
+              <div class="scope-item">❌ Mağaza/platform verileri</div>
+            </div>
           }
         </div>
 
-        <div class="info-card">
-          <h4>💡 Nasıl çalışır?</h4>
-          <p>Sorunuz otomatik olarak SQL sorgusuna çevrilir ve veritabanından gerçek zamanlı veri çekilir.</p>
-          <p>LangGraph Multi-Agent sistemi ile çalışır.</p>
-        </div>
       </div>
-
     </div>
   </main>
 </div>

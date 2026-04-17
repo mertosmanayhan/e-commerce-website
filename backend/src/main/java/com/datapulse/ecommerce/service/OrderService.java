@@ -4,9 +4,11 @@ import com.datapulse.ecommerce.dto.request.CreateOrderRequest;
 import com.datapulse.ecommerce.dto.response.OrderResponse;
 import com.datapulse.ecommerce.entity.*;
 import com.datapulse.ecommerce.entity.enums.OrderStatus;
+import com.datapulse.ecommerce.entity.enums.ShipmentStatus;
 import com.datapulse.ecommerce.exception.ResourceNotFoundException;
 import com.datapulse.ecommerce.repository.OrderRepository;
 import com.datapulse.ecommerce.repository.ProductRepository;
+import com.datapulse.ecommerce.repository.ShipmentRepository;
 import com.datapulse.ecommerce.repository.UserRepository;
 import com.datapulse.ecommerce.security.UserPrincipal;
 import org.springframework.data.domain.Page;
@@ -20,8 +22,15 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class OrderService {
-    private final OrderRepository orderRepository; private final ProductRepository productRepository; private final UserRepository userRepository;
-    public OrderService(OrderRepository or, ProductRepository pr, UserRepository ur) { this.orderRepository=or; this.productRepository=pr; this.userRepository=ur; }
+    private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final ShipmentRepository shipmentRepository;
+
+    public OrderService(OrderRepository or, ProductRepository pr, UserRepository ur, ShipmentRepository sr) {
+        this.orderRepository = or; this.productRepository = pr;
+        this.userRepository = ur; this.shipmentRepository = sr;
+    }
 
     public Page<OrderResponse> getOrdersByUser(Long userId, Pageable p) { return orderRepository.findByUserId(userId, p).map(OrderResponse::fromEntity); }
     public Page<OrderResponse> getOrdersByStore(Long storeId, Pageable p) { return orderRepository.findByStoreId(storeId, p).map(OrderResponse::fromEntity); }
@@ -43,7 +52,20 @@ public class OrderService {
             order.getItems().add(oi);
             total = total.add(product.getPrice().multiply(BigDecimal.valueOf(ir.getQuantity())));
         }
-        order.setTotalAmount(total); orderRepository.save(order); return OrderResponse.fromEntity(order);
+        order.setTotalAmount(total);
+        orderRepository.save(order);
+
+        // Sipariş oluşturulduğunda otomatik kargo kaydı aç
+        String trackingNumber = "TRK-" + (100000 + ThreadLocalRandom.current().nextInt(900000));
+        Shipment shipment = Shipment.builder()
+                .order(order)
+                .trackingNumber(trackingNumber)
+                .status(ShipmentStatus.PROCESSING)
+                .modeOfShipment("Standard")
+                .build();
+        shipmentRepository.save(shipment);
+
+        return OrderResponse.fromEntity(order);
     }
 
     @Transactional public OrderResponse updateOrderStatus(Long id, String status) {

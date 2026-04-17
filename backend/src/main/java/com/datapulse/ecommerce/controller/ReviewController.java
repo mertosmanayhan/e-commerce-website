@@ -27,7 +27,7 @@ public class ReviewController {
         } else if ("CORPORATE".equals(principal.getRole())) {
             result = reviewService.getReviewsByStoreOwner(principal.getId());
         } else {
-            result = reviewService.getAllReviews();
+            result = reviewService.getReviewsByUser(principal.getId());
         }
         return ResponseEntity.ok(ApiResponse.success(result));
     }
