@@ -2,6 +2,7 @@ package com.datapulse.ecommerce.config;
 
 import com.datapulse.ecommerce.security.CustomUserDetailsService;
 import com.datapulse.ecommerce.security.JwtAuthenticationFilter;
+import com.datapulse.ecommerce.security.RateLimitFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,11 +26,14 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtAuthenticationFilter  jwtAuthenticationFilter;
+    private final RateLimitFilter          rateLimitFilter;
 
     public SecurityConfig(CustomUserDetailsService customUserDetailsService,
-                          JwtAuthenticationFilter jwtAuthenticationFilter) {
+                          JwtAuthenticationFilter jwtAuthenticationFilter,
+                          RateLimitFilter rateLimitFilter) {
         this.customUserDetailsService = customUserDetailsService;
         this.jwtAuthenticationFilter  = jwtAuthenticationFilter;
+        this.rateLimitFilter          = rateLimitFilter;
     }
 
     @Bean
@@ -80,6 +84,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -26,6 +26,8 @@ public class StoreResponse {
             r.ownerName  = s.getOwner().getFullName();
             r.ownerEmail = s.getOwner().getEmail();
         }
+        r.address = s.getAddress();
+        r.email = s.getEmail();
         r.open = Boolean.TRUE.equals(s.getIsOpen());
         r.productCount = s.getProducts() != null ? s.getProducts().size() : 0;
         r.createdAt = s.getCreatedAt();

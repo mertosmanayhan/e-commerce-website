@@ -95,5 +95,9 @@ export class Orders implements OnInit {
     return map[s] ?? '';
   }
 
+  goToProduct(productId: number) {
+    if (productId) this.router.navigate(['/product', productId]);
+  }
+
   logout() { this.authService.logout(); }
 }

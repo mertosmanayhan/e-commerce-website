@@ -1,10 +1,10 @@
 <div class="login-page">
   <div class="login-card">
     <div class="logo">
-      <span class="highlight">Data</span>Pulse
+      <img src="logo.jpg" alt="MenekşeStore" class="login-logo-img">
     </div>
     <h2>Tekrar Hoş Geldiniz</h2>
-    <p class="subtitle">DataPulse hesabınızla giriş yapın</p>
+    <p class="subtitle">MenekşeStore hesabınızla giriş yapın</p>
 
     @if (loggedOutMessage) {
       <div class="logout-notice">✅ {{ loggedOutMessage }}</div>
@@ -13,7 +13,7 @@
     <form (ngSubmit)="onLogin()">
       <div class="input-group">
         <label>E-posta</label>
-        <input type="email" name="email" [(ngModel)]="loginData.email" placeholder="admin@datapulse.com" required>
+        <input type="email" name="email" [(ngModel)]="loginData.email" placeholder="eposta@adresiniz.com" required>
       </div>
 
       <div class="input-group">

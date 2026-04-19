@@ -63,5 +63,20 @@ export class Customers implements OnInit {
     return 'badge-individual';
   }
 
+  toggleSuspend(user: any) {
+    this.http.patch<any>(`${environment.apiUrl}/users/${user.id}/suspend`, {}).subscribe({
+      next: () => { user.suspended = !user.suspended; this.cdr.detectChanges(); },
+      error: () => alert('Kullanıcı durumu güncellenemedi.')
+    });
+  }
+
+  deleteUser(user: any) {
+    if (!confirm(`${user.fullName} kullanıcısını silmek istediğinize emin misiniz?`)) return;
+    this.http.delete<any>(`${environment.apiUrl}/users/${user.id}`).subscribe({
+      next: () => { this.users = this.users.filter(u => u.id !== user.id); this.applyFilter(); this.cdr.detectChanges(); },
+      error: () => alert('Kullanıcı silinemedi.')
+    });
+  }
+
   logout() { this.authService.logout(); this.router.navigate(['/login']); }
 }

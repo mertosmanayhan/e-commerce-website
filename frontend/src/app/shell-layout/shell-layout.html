@@ -1,0 +1,166 @@
+<div class="shell-root" [class.sidebar-collapsed]="!sidebarOpen">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────── -->
+  <aside class="sidebar">
+
+    <div class="sidebar-header">
+      <div class="sidebar-logo"><img src="logo.jpg" alt="MenekşeStore" class="sidebar-logo-img"></div>
+      <button class="collapse-btn" (click)="toggleSidebar()" title="Menüyü Daralt">
+        {{ sidebarOpen ? '◀' : '▶' }}
+      </button>
+    </div>
+
+    <!-- ── INDIVIDUAL menüsü ──────────────────────────────── -->
+    @if (isIndividual) {
+      <nav class="menu-section">
+        <p class="menu-label">ALIŞVERIŞ</p>
+        <a routerLink="/analytics"    class="menu-item" [class.active]="isActive('analytics')">
+          <span class="menu-icon">📊</span><span class="menu-text">Harcama Analizim</span>
+        </a>
+        <a routerLink="/products"     class="menu-item" [class.active]="isActive('products')">
+          <span class="menu-icon">🛍️</span><span class="menu-text">Alışveriş</span>
+        </a>
+        <a routerLink="/orders"       class="menu-item" [class.active]="isActive('orders')">
+          <span class="menu-icon">📦</span><span class="menu-text">Siparişlerim</span>
+        </a>
+        <a routerLink="/shipments"    class="menu-item" [class.active]="isActive('shipments')">
+          <span class="menu-icon">🚚</span><span class="menu-text">Kargolarım</span>
+        </a>
+        <a routerLink="/wishlist"     class="menu-item" [class.active]="isActive('wishlist')">
+          <span class="menu-icon">❤️</span><span class="menu-text">Favorilerim</span>
+        </a>
+        <a routerLink="/cart"         class="menu-item" [class.active]="isActive('cart')">
+          <span class="menu-icon">🛒</span><span class="menu-text">Sepetim</span>
+        </a>
+        <a routerLink="/reviews-page" class="menu-item" [class.active]="isActive('reviews-page')">
+          <span class="menu-icon">⭐</span><span class="menu-text">Değerlendirmelerim</span>
+        </a>
+        <a routerLink="/ai-assistant" class="menu-item" [class.active]="isActive('ai-assistant')">
+          <span class="menu-icon">🤖</span>
+          <span class="menu-text">AI Asistan</span>
+          <span class="badge">Yeni</span>
+        </a>
+      </nav>
+    }
+
+    <!-- ── CORPORATE menüsü ────────────────────────────────── -->
+    @if (isCorporate) {
+      <nav class="menu-section">
+        <p class="menu-label">ANALİTİK</p>
+        <a routerLink="/dashboard"        class="menu-item" [class.active]="isActive('dashboard')">
+          <span class="menu-icon">📊</span><span class="menu-text">Satış Analitiği</span>
+        </a>
+      </nav>
+      <nav class="menu-section">
+        <p class="menu-label">MAĞAZA</p>
+        <a routerLink="/products"         class="menu-item" [class.active]="isActive('products')">
+          <span class="menu-icon">📦</span><span class="menu-text">Ürünler</span>
+        </a>
+        <a routerLink="/product-create"   class="menu-item" [class.active]="isActive('product-create')">
+          <span class="menu-icon">➕</span><span class="menu-text">Ürün Ekle</span>
+        </a>
+        <a routerLink="/product-manage"   class="menu-item" [class.active]="isActive('product-manage')">
+          <span class="menu-icon">✏️</span><span class="menu-text">Ürün Yönetimi</span>
+        </a>
+        <a routerLink="/orders"           class="menu-item" [class.active]="isActive('orders')">
+          <span class="menu-icon">🛒</span><span class="menu-text">Siparişler</span>
+        </a>
+        <a routerLink="/shipments"        class="menu-item" [class.active]="isActive('shipments')">
+          <span class="menu-icon">🚚</span><span class="menu-text">Kargolar</span>
+        </a>
+        <a routerLink="/reviews-page"     class="menu-item" [class.active]="isActive('reviews-page')">
+          <span class="menu-icon">🔔</span><span class="menu-text">Gelen Yorumlar</span>
+        </a>
+        <a routerLink="/store-settings"   class="menu-item" [class.active]="isActive('store-settings')">
+          <span class="menu-icon">🏪</span><span class="menu-text">Mağaza Ayarları</span>
+        </a>
+      </nav>
+      <nav class="menu-section">
+        <p class="menu-label">ARAÇLAR</p>
+        <a routerLink="/ai-assistant"     class="menu-item" [class.active]="isActive('ai-assistant')">
+          <span class="menu-icon">🤖</span>
+          <span class="menu-text">AI Asistan</span>
+          <span class="badge">Yeni</span>
+        </a>
+      </nav>
+    }
+
+    <!-- ── ADMIN menüsü ────────────────────────────────────── -->
+    @if (isAdmin) {
+      <nav class="menu-section">
+        <p class="menu-label">ANALİTİK</p>
+        <a routerLink="/dashboard"        class="menu-item" [class.active]="isActive('dashboard')">
+          <span class="menu-icon">📊</span><span class="menu-text">Platform Analitiği</span>
+        </a>
+      </nav>
+      <nav class="menu-section">
+        <p class="menu-label">YÖNETİM</p>
+        <a routerLink="/customers"        class="menu-item" [class.active]="isActive('customers')">
+          <span class="menu-icon">👥</span><span class="menu-text">Müşteriler</span>
+        </a>
+        <a routerLink="/store-settings"   class="menu-item" [class.active]="isActive('store-settings')">
+          <span class="menu-icon">🏪</span><span class="menu-text">Mağazalar</span>
+        </a>
+        <a routerLink="/products"         class="menu-item" [class.active]="isActive('products')">
+          <span class="menu-icon">📦</span><span class="menu-text">Ürünler</span>
+        </a>
+        <a routerLink="/product-manage"   class="menu-item" [class.active]="isActive('product-manage')">
+          <span class="menu-icon">✏️</span><span class="menu-text">Ürün Yönetimi</span>
+        </a>
+        <a routerLink="/orders"           class="menu-item" [class.active]="isActive('orders')">
+          <span class="menu-icon">🛒</span><span class="menu-text">Siparişler</span>
+        </a>
+        <a routerLink="/shipments"        class="menu-item" [class.active]="isActive('shipments')">
+          <span class="menu-icon">🚚</span><span class="menu-text">Kargolar</span>
+        </a>
+        <a routerLink="/reviews-page"     class="menu-item" [class.active]="isActive('reviews-page')">
+          <span class="menu-icon">⭐</span><span class="menu-text">Değerlendirmeler</span>
+        </a>
+      </nav>
+      <nav class="menu-section">
+        <p class="menu-label">ARAÇLAR</p>
+        <a routerLink="/ai-assistant"     class="menu-item" [class.active]="isActive('ai-assistant')">
+          <span class="menu-icon">🤖</span>
+          <span class="menu-text">AI Asistan</span>
+          <span class="badge">Yeni</span>
+        </a>
+      </nav>
+    }
+
+    <!-- Guest menüsü -->
+    @if (isGuest) {
+      <nav class="menu-section">
+        <p class="menu-label">SEPETİM</p>
+        <a routerLink="/cart"     class="menu-item" [class.active]="isActive('cart')">
+          <span class="menu-icon">🛒</span><span class="menu-text">Sepetim</span>
+        </a>
+        <a routerLink="/wishlist" class="menu-item" [class.active]="isActive('wishlist')">
+          <span class="menu-icon">❤️</span><span class="menu-text">Favorilerim</span>
+        </a>
+      </nav>
+    }
+
+    <!-- Sidebar footer -->
+    <div class="sidebar-footer">
+      @if (isGuest) {
+        <a routerLink="/login" class="login-btn">Giriş Yap</a>
+        <a routerLink="/signup" class="signup-btn">Kayıt Ol</a>
+      } @else {
+        <div class="sidebar-user">
+          <div class="user-avatar">{{ (user?.fullName ?? 'U')[0] }}</div>
+          <div class="user-info">
+            <span class="user-name">{{ user?.fullName?.split(' ')[0] ?? 'Kullanıcı' }}</span>
+            <span class="user-role">{{ roleLabel }}</span>
+          </div>
+        </div>
+        <button class="logout-btn" (click)="logout()">Çıkış</button>
+      }
+    </div>
+  </aside>
+
+  <!-- ── Ana içerik — sadece bu alan değişir ──────────────── -->
+  <main class="shell-content">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

@@ -1,31 +1,46 @@
 <div class="store-container">
 
   <nav class="navbar">
-    <div class="logo"><span class="highlight">Data</span>Pulse <span class="logo-sub">| Store</span></div>
+    <a routerLink="/products" class="logo navbar-logo">
+      <img src="logo.jpg" alt="MenekşeStore" class="navbar-logo-img">
+    </a>
 
     <div class="search-container">
       <input type="text" [(ngModel)]="searchText" placeholder="Ürün, kategori veya marka ara..." class="search-input">
       <span class="search-icon">🔍</span>
     </div>
 
-
     <div class="nav-actions">
+
+      <!-- Giriş yapmış INDIVIDUAL -->
       @if (isAuth && currentUser?.role === 'INDIVIDUAL') {
         <button class="orders-btn" routerLink="/analytics">📊 Analizlerim</button>
-        <button class="orders-btn" routerLink="/wishlist" style="color:#ff4757;">❤️ Favorilerim</button>
+        <button class="orders-btn" routerLink="/wishlist" style="color:#ff4757;">
+          ❤️ Favorilerim
+          @if (favoriteIds.size > 0) { <span class="cart-badge">({{ favoriteIds.size }})</span> }
+        </button>
         <button class="orders-btn" routerLink="/orders">📦 Siparişlerim</button>
         <button class="cart-btn" routerLink="/cart">
           Sepetim @if (cartCount > 0) { <span class="cart-badge">({{ cartCount }})</span> }
         </button>
       }
 
+      <!-- Giriş yapmış CORPORATE / ADMIN -->
       @if (isAuth && (currentUser?.role === 'CORPORATE' || currentUser?.role === 'ADMIN')) {
         <button class="orders-btn" routerLink="/dashboard">📊 Dashboard</button>
         <button class="orders-btn" routerLink="/orders">🛒 Siparişler</button>
         <button class="orders-btn" routerLink="/shipments">🚚 Kargolar</button>
       }
 
+      <!-- Misafir kullanıcı -->
       @if (!isAuth) {
+        <button class="orders-btn" routerLink="/wishlist" style="color:#ff4757;">
+          ❤️ Favoriler
+          @if (favoriteIds.size > 0) { <span class="cart-badge">({{ favoriteIds.size }})</span> }
+        </button>
+        <button class="cart-btn" routerLink="/cart">
+          🛒 Sepetim @if (cartCount > 0) { <span class="cart-badge">({{ cartCount }})</span> }
+        </button>
         <button class="login-btn" routerLink="/login">Giriş Yap</button>
       }
 
@@ -44,11 +59,11 @@
 
       <h3>Kategoriler</h3>
       <ul class="category-list">
-        <li *ngFor="let cat of categories"
-            (click)="selectCategory(cat)"
-            [class.active]="selectedCategory === cat">
-          {{ cat }}
-        </li>
+        @for (cat of categories; track cat) {
+          <li (click)="selectCategory(cat)" [class.active]="selectedCategory === cat">
+            {{ cat }}
+          </li>
+        }
       </ul>
 
       <div class="filter-group">
@@ -96,64 +111,61 @@
       </div>
 
       <div class="product-grid">
-        <div class="product-card" *ngFor="let product of filteredProducts">
+        @for (product of filteredProducts; track product.id) {
+          <div class="product-card">
 
-          <div class="stock-badge low-stock" *ngIf="product.stock > 0 && product.stock <= 5">Son {{ product.stock }} Ürün!</div>
-          <div class="stock-badge out-of-stock" *ngIf="product.stock === 0">Tükendi</div>
-          <button class="wishlist-btn" (click)="toggleWishlist(product)">
-            {{ isFavorite(product.id) ? '❤️' : '🤍' }}
-          </button>
-          <div class="card-image" style="width: 100%; height: 200px; overflow: hidden; border-radius: 12px 12px 0 0; background: #f0f0f0; margin-bottom: 10px;">
-            <img [src]="product.imageUrl" [alt]="product.name" 
-                 style="width: 100%; height: 100%; object-fit: cover;" 
-                 [class.grayscale]="product.stock === 0">
-          </div>
+            @if (product.stock > 0 && product.stock <= 5) {
+              <div class="stock-badge low-stock">Son {{ product.stock }} Ürün!</div>
+            }
+            @if (product.stock === 0) {
+              <div class="stock-badge out-of-stock">Tükendi</div>
+            }
 
-          <div class="card-content">
-            <div class="product-info">
-              <span class="category-tag">{{ product.category }}</span>
-              <h3 class="product-name" [class.faded]="product.stock === 0">{{ product.name }}</h3>
+            <button class="wishlist-btn" (click)="toggleWishlist(product)">
+              {{ isFavorite(product.id) ? '❤️' : '🤍' }}
+            </button>
 
-              <div class="rating-box">
-                <span class="stars">{{ getStars(product.rating) }}</span>
-                <span class="review-count">({{ product.reviewCount }})</span>
+            <div class="card-image" style="width: 100%; height: 200px; overflow: hidden; border-radius: 12px 12px 0 0; background: #f0f0f0; margin-bottom: 10px;">
+              <img [src]="product.imageUrl" [alt]="product.name"
+                   style="width: 100%; height: 100%; object-fit: cover;"
+                   [class.grayscale]="product.stock === 0">
+            </div>
+
+            <div class="card-content">
+              <div class="product-info">
+                <span class="category-tag">{{ product.category }}</span>
+                <h3 class="product-name" [class.faded]="product.stock === 0">{{ product.name }}</h3>
+                <div class="rating-box">
+                  <span class="stars">{{ getStars(product.rating) }}</span>
+                  <span class="review-count">({{ product.reviewCount }})</span>
+                </div>
+              </div>
+
+              <div class="card-footer">
+                <div class="product-price" [class.faded]="product.stock === 0">${{ product.price }}</div>
+                <div class="action-buttons">
+                  @if (currentUser?.role !== 'CORPORATE' && currentUser?.role !== 'ADMIN') {
+                    <button class="add-cart-btn"
+                            (click)="onAddToCartClick(product)"
+                            [disabled]="product.stock === 0">
+                      {{ product.stock === 0 ? 'Tükendi' : (cartAddedId === product.id ? '✓ Eklendi' : 'Sepete Ekle') }}
+                    </button>
+                  }
+                  <button class="detail-btn" [routerLink]="['/product', product.id]">İncele</button>
+                </div>
               </div>
             </div>
 
-            <div class="card-footer">
-              <div class="product-price" [class.faded]="product.stock === 0">${{ product.price }}</div>
-              <div class="action-buttons">
-                @if (currentUser?.role !== 'CORPORATE' && currentUser?.role !== 'ADMIN') {
-                  <button class="add-cart-btn" (click)="onAddToCartClick(product)" [disabled]="product.stock === 0">
-                    {{ product.stock === 0 ? 'Tükendi' : 'Sepete Ekle' }}
-                  </button>
-                }
-                <button class="detail-btn" [routerLink]="['/product', product.id]">İncele</button>
-              </div>
-            </div>
           </div>
-        </div>
+        }
 
-        <div *ngIf="filteredProducts.length === 0" class="no-results">
-          <div style="font-size: 50px;">🕵️‍♂️</div>
-          <h3>Arama kriterlerinize uygun ürün bulunamadı.</h3>
-          <p>Lütfen farklı kelimelerle tekrar deneyin.</p>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" *ngIf="showAuthModal">
-    <div class="modal-box">
-      <div class="modal-icon">🛒</div>
-      <h3 style="margin-top:0; color: #2c3e50;">Ürün Sepete Eklendi!</h3>
-      <p style="color: #666; font-size: 14px; margin-bottom: 25px;">Siparişini tamamlamak için nasıl devam etmek istersin?</p>
-
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        <button (click)="goToLogin()" class="modal-btn primary">Giriş Yap veya Üye Ol</button>
-        <button (click)="continueAsGuest()" class="modal-btn secondary">Üye Olmadan Devam Et</button>
-        <button (click)="closeModal()" class="modal-btn text-only">Alışverişe Dön</button>
+        @if (filteredProducts.length === 0) {
+          <div class="no-results">
+            <div style="font-size: 50px;">🕵️‍♂️</div>
+            <h3>Arama kriterlerinize uygun ürün bulunamadı.</h3>
+            <p>Lütfen farklı kelimelerle tekrar deneyin.</p>
+          </div>
+        }
       </div>
     </div>
   </div>

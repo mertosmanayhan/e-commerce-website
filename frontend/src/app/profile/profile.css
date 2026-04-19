@@ -2,7 +2,7 @@
 
 /* Sidebar — same as analytics */
 .sidebar { width: 240px; background: #12192c; padding: 24px 16px; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
-.sidebar-logo { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 36px; padding: 0 10px; }
+.sidebar-logo { display: flex; align-items: center; white-space: nowrap; }
 .hl { color: #8c52ff; }
 .menu-label { font-size: 11px; color: #4a5a7a; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 10px; padding: 0 10px; }
 .menu-section { margin-bottom: 28px; }

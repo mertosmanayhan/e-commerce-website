@@ -42,9 +42,9 @@ export class Login implements OnInit {
       next: (res) => {
         this.loading = false;
         if (res.success) {
-          // Login sonrası kullanıcı sepeti ve favorilerini anında çek
-          this.cartService.loadCart();
-          this.wishlistService.loadWishlist();
+          // Misafir sepeti ve favorileri hesaba aktar, sonra sunucudan yükle
+          this.cartService.mergeGuestCart();
+          this.wishlistService.mergeGuestWishlist();
 
           const role = res.data.user.role;
           if (role === 'ADMIN' || role === 'CORPORATE') {

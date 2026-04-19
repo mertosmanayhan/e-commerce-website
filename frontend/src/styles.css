@@ -1,1 +1,42 @@
-/* You can add global styles to this file, and also import other style files */
+/* ── MenekşeStore Global Styles ── */
+
+/* Sidebar logo (dark sidebar içinde) */
+.sidebar-logo-img {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* Navbar logo (beyaz navbar içinde) */
+.navbar-logo-img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* Login sayfası logo */
+.login-logo-img {
+  height: 90px;
+  width: auto;
+  object-fit: contain;
+  margin: 0 auto 8px auto;
+  display: block;
+}
+
+/* Signup sol panel logo */
+.signup-logo-img {
+  height: 72px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Navbar logo link */
+a.navbar-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}

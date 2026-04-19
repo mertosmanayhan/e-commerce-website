@@ -498,6 +498,7 @@
 
     <!-- ══ ÜRÜNLER ════════════════════════════════════════════════ -->
     @if (activeTab === 'products') {
+      @if (storeToast.visible) { <div class="toast" [class.toast-error]="storeToast.type==='error'">{{ storeToast.message }}</div> }
       <div class="section-header">
         <div><h2>📦 Ürünler</h2><p class="sub-text">Ürün kataloğu</p></div>
         <button class="btn-refresh" (click)="loadProducts()">Yenile</button>
@@ -510,24 +511,39 @@
       } @else if (filteredProducts.length === 0) {
         <div class="empty-state"><div class="empty-icon">📦</div><h3>Ürün bulunamadı</h3></div>
       } @else {
-        <div class="table-card">
-          <table class="data-table">
-            <thead><tr><th>#</th><th>Ürün Adı</th><th>Kategori</th><th>Fiyat</th><th>Stok</th><th>Puan</th></tr></thead>
-            <tbody>
-              @for (p of filteredProducts; track p.id; let i = $index) {
-                <tr>
-                  <td>{{ productPage * 20 + i + 1 }}</td>
-                  <td>
-                    <a [routerLink]="['/product', p.id]" class="product-link">{{ p.name }}</a>
-                  </td>
-                  <td>{{ p.category }}</td>
-                  <td>₺{{ p.price | number:'1.0-0' }}</td>
-                  <td [class.low-stock-cell]="p.stock < 10">{{ p.stock }}</td>
-                  <td>{{ p.rating?.toFixed(1) ?? '-' }} ⭐</td>
-                </tr>
-              }
-            </tbody>
-          </table>
+        <div class="products-card-grid">
+          @for (p of filteredProducts; track p.id) {
+            <div class="product-card">
+              <div class="product-img-wrap">
+                @if (p.imageUrl) {
+                  <img [src]="p.imageUrl" [alt]="p.name" class="product-img" loading="lazy">
+                } @else {
+                  <div class="product-img-placeholder">📦</div>
+                }
+                <span class="stock-badge" [class.stock-zero]="p.stock === 0" [class.stock-low]="p.stock > 0 && p.stock <= 10">
+                  {{ p.stock === 0 ? 'Tükendi' : 'Stok: ' + p.stock }}
+                </span>
+              </div>
+              <div class="product-body">
+                <div class="product-cat">{{ p.category ?? p.categoryName ?? '-' }}</div>
+                <h3 class="product-name">{{ p.name }}</h3>
+                @if (p.description) {
+                  <p class="product-desc">{{ p.description }}</p>
+                }
+                <div class="product-meta">
+                  @if (p.sku) { <span class="meta-tag">SKU: {{ p.sku }}</span> }
+                  @if (p.rating) { <span class="meta-tag">⭐ {{ p.rating | number:'1.1-1' }}</span> }
+                </div>
+                <div class="product-footer">
+                  <span class="product-price">₺{{ p.price | number:'1.0-0' }}</span>
+                  <div class="product-actions">
+                    <a [routerLink]="['/product', p.id]" class="action-btn-sm view">👁️</a>
+                    <button class="action-btn-sm delete" (click)="deleteProduct(p)">🗑️ Sil</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
         </div>
         @if (productTotalPages > 1) {
           <div class="pagination">
@@ -600,11 +616,31 @@
     <!-- ══ MAĞAZA AYARLARI ═══════════════════════════════════════ -->
     @if (activeTab === 'store-settings') {
       @if (storeToast.visible) { <div class="toast" [class.toast-error]="storeToast.type==='error'">{{ storeToast.message }}</div> }
+
+      <!-- One-time credentials modal -->
+      @if (settingsNewCredentials) {
+        <div class="credentials-overlay">
+          <div class="credentials-modal">
+            <div class="credentials-header">
+              <h3>🔑 Mağaza Giriş Bilgileri</h3>
+              <p class="credentials-warning">⚠️ Bu bilgiler yalnızca bir kez gösterilecek. Mağaza sahibine iletin!</p>
+            </div>
+            <div class="credentials-body">
+              <div class="cred-row"><span class="cred-label">E-posta:</span><span class="cred-value">{{ settingsNewCredentials.email }}</span></div>
+              <div class="cred-row"><span class="cred-label">Şifre:</span><span class="cred-value cred-password">{{ settingsNewCredentials.password }}</span></div>
+            </div>
+            <button class="btn-primary" (click)="dismissSettingsCredentials()">Anladım, Kapat</button>
+          </div>
+        </div>
+      }
+
       <div class="section-header">
         <div><h2>⚙️ Mağaza Ayarları</h2><p class="sub-text">Mağaza bilgilerini yönetin</p></div>
         <div style="display:flex;gap:10px">
           <button class="btn-outline" (click)="loadLowStock()" [disabled]="loadingStock">{{ loadingStock ? '...' : '⚠️ Düşük Stok' }}</button>
-          @if (isCorporate) { <button class="btn-primary" (click)="settingsShowNewForm = !settingsShowNewForm">{{ settingsShowNewForm ? '✕ Kapat' : '+ Yeni Mağaza' }}</button> }
+          @if (isAdmin) {
+            <button class="btn-primary" (click)="settingsShowNewForm = !settingsShowNewForm">{{ settingsShowNewForm ? '✕ Kapat' : '+ Yeni Mağaza' }}</button>
+          }
         </div>
       </div>
       @if (showLowStock) {
@@ -625,22 +661,26 @@
           }
         </div>
       }
-      @if (settingsShowNewForm && isCorporate) {
+      @if (settingsShowNewForm && isAdmin) {
         <div class="form-card">
           <h3>Yeni Mağaza Oluştur</h3>
           <div class="form-grid">
             <div class="form-group"><label>Mağaza Adı *</label><input type="text" [(ngModel)]="settingsNewForm.name" placeholder="Mağaza adı"></div>
-            <div class="form-group"><label>E-posta</label><input type="email" [(ngModel)]="settingsNewForm.email" placeholder="iletisim@magaza.com"></div>
+            <div class="form-group"><label>Mağaza E-postası</label><input type="email" [(ngModel)]="settingsNewForm.email" placeholder="iletisim@magaza.com"></div>
+            <div class="form-group"><label>Mağaza Sahibi E-postası *</label><input type="email" [(ngModel)]="settingsNewForm.ownerEmail" placeholder="sahip@email.com"></div>
             <div class="form-group"><label>Adres</label><input type="text" [(ngModel)]="settingsNewForm.address" placeholder="Mağaza adresi"></div>
             <div class="form-group"><label>Açıklama</label><input type="text" [(ngModel)]="settingsNewForm.description" placeholder="Kısa açıklama"></div>
           </div>
+          <p class="form-hint">💡 Mağaza oluşturulduktan sonra giriş bilgileri size tek seferlik gösterilecektir.</p>
           <button class="btn-primary" (click)="createStore()" [disabled]="settingsCreating || !settingsNewForm.name">{{ settingsCreating ? 'Oluşturuluyor...' : 'Oluştur' }}</button>
         </div>
       }
       @if (settingsLoading) {
         <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
       } @else if (settingsStores.length === 0) {
-        <div class="empty-state"><div class="empty-icon">🏪</div><h3>Henüz mağaza kaydı yok</h3></div>
+        <div class="empty-state"><div class="empty-icon">🏪</div><h3>Henüz mağaza kaydı yok</h3>
+          @if (isAdmin) { <p>Yukarıdan yeni mağaza oluşturabilirsiniz.</p> }
+        </div>
       } @else {
         <div class="stores-grid">
           @for (store of settingsStores; track store.id) {
@@ -674,7 +714,15 @@
                 </div>
                 <div class="card-actions">
                   <button class="action-btn edit" (click)="startEdit(store)">✏️ Düzenle</button>
-                  @if (isAdmin) { <button class="action-btn toggle" (click)="toggleSettingsStore(store)">{{ store.open !== false ? '🔴 Kapat' : '🟢 Aç' }}</button> }
+                  <!-- CORPORATE: sadece kapat/aç -->
+                  @if (isCorporate) {
+                    <button class="action-btn toggle" (click)="toggleSettingsStore(store)">{{ store.open !== false ? '🔴 Kapat' : '🟢 Aç' }}</button>
+                  }
+                  <!-- ADMIN: kapat/aç + sil -->
+                  @if (isAdmin) {
+                    <button class="action-btn toggle" (click)="toggleSettingsStore(store)">{{ store.open !== false ? '🔴 Kapat' : '🟢 Aç' }}</button>
+                    <button class="action-btn delete" (click)="deleteSettingsStore(store)">🗑️ Sil</button>
+                  }
                 </div>
               }
             </div>
@@ -688,6 +736,12 @@
       <div class="section-header">
         <div><h2>🚚 Kargolar</h2><p class="sub-text">Toplam {{ shipments.length }} kargo</p></div>
         <button class="btn-refresh" (click)="loadShipments()">Yenile</button>
+      </div>
+      <div class="filter-bar">
+        <select [(ngModel)]="shipmentSortOrder" (change)="onShipmentSortChange()" class="sort-select">
+          <option value="newest">En Yeni</option>
+          <option value="oldest">En Eski</option>
+        </select>
       </div>
       @if (shipmentsLoading) {
         <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
@@ -706,7 +760,7 @@
                   <td>{{ s.customerName ?? '-' }}</td>
                   <td>{{ s.carrier ?? s.modeOfShipment ?? 'Yurtiçi Kargo' }}</td>
                   <td><span class="status-badge" [class]="shipmentStatusClass(s.status)">{{ shipmentStatusLabel(s.status) }}</span></td>
-                  <td>{{ s.orderDate ? (s.orderDate | date:'dd.MM.yyyy') : (s.shippedDate ? (s.shippedDate | date:'dd.MM.yyyy') : '-') }}</td>
+                  <td>{{ s.createdAt ? (s.createdAt | date:'dd.MM.yyyy') : (s.orderDate ? (s.orderDate | date:'dd.MM.yyyy') : '-') }}</td>
                 </tr>
               }
             </tbody>

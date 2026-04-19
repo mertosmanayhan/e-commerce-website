@@ -2,7 +2,7 @@
 
   <!-- Sidebar -->
   <aside class="sidebar">
-    <div class="sidebar-logo"><span class="highlight">Data</span>Pulse</div>
+    <div class="sidebar-logo"><span class="highlight">Menekşe</span>Store</div>
     <div class="menu-section">
       <p class="menu-label">ANA MENÜ</p>
       <a routerLink="/dashboard"      routerLinkActive="active" class="menu-item"><span class="menu-icon">📊</span> Satış Analitiği</a>
@@ -36,6 +36,29 @@
       <div class="toast" [class.toast-error]="toast.type === 'error'">{{ toast.message }}</div>
     }
 
+    <!-- Yeni mağaza kimlik bilgileri modalı -->
+    @if (newStoreCredentials) {
+      <div class="credentials-overlay">
+        <div class="credentials-modal">
+          <div class="credentials-header">
+            <h3>🔑 Mağaza Giriş Bilgileri</h3>
+            <p class="credentials-warning">⚠️ Bu bilgiler yalnızca bir kez gösterilecek. Mağaza sahibine iletin!</p>
+          </div>
+          <div class="credentials-body">
+            <div class="cred-row">
+              <span class="cred-label">E-posta:</span>
+              <span class="cred-value">{{ newStoreCredentials.email }}</span>
+            </div>
+            <div class="cred-row">
+              <span class="cred-label">Şifre:</span>
+              <span class="cred-value cred-password">{{ newStoreCredentials.password }}</span>
+            </div>
+          </div>
+          <button class="btn-primary" (click)="dismissCredentials()">Anladım, Kapat</button>
+        </div>
+      </div>
+    }
+
     <div class="page-header">
       <div>
         <h1>🏪 Mağaza Ayarları</h1>
@@ -45,7 +68,7 @@
         <button class="btn-outline" (click)="loadLowStock()" [disabled]="loadingStock">
           {{ loadingStock ? '...' : '⚠️ Düşük Stok' }}
         </button>
-        @if (isCorporate) {
+        @if (isAdmin) {
           <button class="btn-primary" (click)="showNewForm = !showNewForm">
             {{ showNewForm ? '✕ Kapat' : '+ Yeni Mağaza' }}
           </button>
@@ -82,8 +105,8 @@
       </div>
     }
 
-    <!-- New Store Form -->
-    @if (showNewForm && isCorporate) {
+    <!-- New Store Form (ADMIN only) -->
+    @if (showNewForm && isAdmin) {
       <div class="form-card">
         <h3>Yeni Mağaza Oluştur</h3>
         <div class="form-grid">
@@ -92,8 +115,12 @@
             <input type="text" [(ngModel)]="newForm.name" placeholder="Mağaza adı">
           </div>
           <div class="form-group">
-            <label>E-posta</label>
+            <label>Mağaza E-postası</label>
             <input type="email" [(ngModel)]="newForm.email" placeholder="iletisim@magaza.com">
+          </div>
+          <div class="form-group">
+            <label>Mağaza Sahibi E-postası *</label>
+            <input type="email" [(ngModel)]="newForm.ownerEmail" placeholder="sahip@email.com">
           </div>
           <div class="form-group">
             <label>Adres</label>
@@ -104,6 +131,7 @@
             <input type="text" [(ngModel)]="newForm.description" placeholder="Kısa açıklama">
           </div>
         </div>
+        <p class="form-hint">💡 Mağaza oluşturulduktan sonra giriş bilgileri size tek seferlik gösterilecektir.</p>
         <button class="btn-primary" (click)="createStore()" [disabled]="creating || !newForm.name">
           {{ creating ? 'Oluşturuluyor...' : 'Oluştur' }}
         </button>
@@ -116,7 +144,7 @@
       <div class="empty-state">
         <div class="empty-icon">🏪</div>
         <h3>Henüz mağaza kaydı yok</h3>
-        <p>Yukarıdan yeni mağaza oluşturabilirsiniz.</p>
+        @if (isAdmin) { <p>Yukarıdan yeni mağaza oluşturabilirsiniz.</p> }
       </div>
     } @else {
       <div class="stores-grid">
@@ -158,10 +186,18 @@
               </div>
               <div class="card-actions">
                 <button class="action-btn edit" (click)="startEdit(store)">✏️ Düzenle</button>
+                <!-- CORPORATE: sadece kapat/aç -->
+                @if (isCorporate) {
+                  <button class="action-btn toggle" (click)="toggleStore(store)">
+                    {{ store.open !== false ? '🔴 Kapat' : '🟢 Aç' }}
+                  </button>
+                }
+                <!-- ADMIN: kapat/aç + sil -->
                 @if (isAdmin) {
                   <button class="action-btn toggle" (click)="toggleStore(store)">
                     {{ store.open !== false ? '🔴 Kapat' : '🟢 Aç' }}
                   </button>
+                  <button class="action-btn delete" (click)="deleteStore(store)">🗑️ Sil</button>
                 }
               </div>
             }

@@ -104,3 +104,30 @@
 .loading-state { display: flex; flex-direction: column; align-items: center; padding: 80px; color: #888; gap: 16px; }
 .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #8c52ff; border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Delete button */
+.action-btn.delete { background: rgba(231,76,60,.1); color: #c0392b; }
+.action-btn.delete:hover { background: rgba(231,76,60,.2); }
+
+/* Form hint */
+.form-hint { font-size: 12px; color: #8c52ff; background: rgba(140,82,255,.07); border: 1px solid rgba(140,82,255,.2); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; }
+
+/* Credentials one-time modal */
+.credentials-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55);
+  display: flex; align-items: center; justify-content: center; z-index: 10000;
+}
+.credentials-modal {
+  background: #fff; border-radius: 18px; padding: 32px 36px;
+  max-width: 460px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  animation: popIn .35s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes popIn { from { opacity:0; transform:scale(.85); } to { opacity:1; transform:scale(1); } }
+.credentials-header { margin-bottom: 20px; }
+.credentials-header h3 { margin: 0 0 10px; font-size: 18px; color: #1a202c; }
+.credentials-warning { margin: 0; font-size: 13px; background: #fff7ed; color: #92400e; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 14px; }
+.credentials-body { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.cred-row { display: flex; align-items: center; gap: 14px; background: #f8faff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; }
+.cred-label { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .5px; min-width: 64px; }
+.cred-value { font-size: 15px; font-weight: 600; color: #1a202c; word-break: break-all; }
+.cred-password { font-family: 'Courier New', monospace; color: #8c52ff; font-size: 17px; letter-spacing: 1px; }

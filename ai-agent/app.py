@@ -16,10 +16,13 @@ from typing import AsyncGenerator, Optional
 
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from agents import DB_OK, GROQ_KEY, USE_LLM
 from graph import agent_graph
@@ -33,11 +36,14 @@ logger = logging.getLogger("datapulse.app")
 # FastAPI setup
 # ──────────────────────────────────────────────────────────────────────────────
 
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="DataPulse Text2SQL API", version="2.0.0")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=["http://localhost:4200", "http://localhost:4201"],
+    allow_methods=["POST", "GET"],
     allow_headers=["*"],
 )
 
@@ -92,7 +98,8 @@ def _serialize_final(final: AgentState) -> dict:
 # ──────────────────────────────────────────────────────────────────────────────
 
 @app.post("/api/chat/ask")
-def chat_ask(req: ChatRequest):
+@limiter.limit("30/minute")
+def chat_ask(request: Request, req: ChatRequest):
     """Synchronous endpoint — returns full result after graph completes."""
     try:
         final = agent_graph.invoke(_make_state(req))
@@ -136,7 +143,8 @@ async def _event_stream(req: ChatRequest) -> AsyncGenerator[str, None]:
 
 
 @app.post("/api/chat/stream")
-async def chat_stream(req: ChatRequest):
+@limiter.limit("30/minute")
+async def chat_stream(request: Request, req: ChatRequest):
     """SSE streaming endpoint — emits thinking phases then result."""
     return StreamingResponse(
         _event_stream(req),

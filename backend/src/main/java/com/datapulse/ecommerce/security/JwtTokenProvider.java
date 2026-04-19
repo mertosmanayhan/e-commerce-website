@@ -82,6 +82,18 @@ public class JwtTokenProvider {
     }
 
     public boolean validateToken(String authToken) {
+        if (authToken == null || authToken.isBlank()) return false;
+        // AV-06: reject alg:none tokens — split and check header before full parse
+        try {
+            String[] parts = authToken.split("\\.");
+            if (parts.length < 3) return false;
+            String header = new String(java.util.Base64.getUrlDecoder().decode(
+                parts[0].length() % 4 == 0 ? parts[0] : parts[0] + "====".substring(parts[0].length() % 4)
+            ));
+            if (header.toLowerCase().contains("\"none\"") || header.toLowerCase().contains("'none'")) {
+                return false;
+            }
+        } catch (Exception ignored) { return false; }
         try {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(authToken);
             return true;

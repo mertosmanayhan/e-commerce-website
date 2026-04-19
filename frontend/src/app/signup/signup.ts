@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../auth.service';
+import { CartService } from '../cart.service';
+import { WishlistService } from '../wishlist.service';
 
 @Component({
   selector: 'app-signup',
@@ -37,7 +39,21 @@ export class Signup {
     this.strength = s;
   }
 
-  constructor(private router: Router, private authService: AuthService) {}
+  private returnUrl = '/products';
+
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private authService: AuthService,
+    private cartService: CartService,
+    private wishlistService: WishlistService
+  ) {}
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      if (params['returnUrl']) this.returnUrl = params['returnUrl'];
+    });
+  }
 
   onSignup() {
     if (this.form.password !== this.form.confirmPassword) {
@@ -66,10 +82,18 @@ export class Signup {
     this.authService.register(payload).subscribe({
       next: (res: any) => {
         this.loading = false;
-        // Backend bazen success:true ile 200, bazen success:false ile 200 döner
         if (res?.success === true) {
-          this.successMessage = 'Hesabınız başarıyla oluşturuldu. Giriş ekranına yönlendiriliyorsunuz...';
-          setTimeout(() => this.router.navigate(['/login']), 2500);
+          // Token varsa otomatik giriş yap ve misafir verilerini aktar
+          if (res.data?.accessToken) {
+            localStorage.setItem('token', res.data.accessToken);
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+            this.cartService.mergeGuestCart();
+            this.wishlistService.mergeGuestWishlist();
+            this.router.navigateByUrl(this.returnUrl);
+          } else {
+            this.successMessage = 'Hesabınız başarıyla oluşturuldu. Giriş ekranına yönlendiriliyorsunuz...';
+            setTimeout(() => this.router.navigate(['/login']), 2500);
+          }
         } else {
           this.errorMessage = res?.message || 'Kayıt sırasında bir hata oluştu.';
         }

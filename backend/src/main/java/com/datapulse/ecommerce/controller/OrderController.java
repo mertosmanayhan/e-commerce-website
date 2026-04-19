@@ -63,7 +63,21 @@ public class OrderController {
         w.flush();
     }
 
-    @GetMapping("/{id}") @Operation(summary="Get order") public ResponseEntity<ApiResponse<OrderResponse>> getById(@PathVariable Long id) { return ResponseEntity.ok(ApiResponse.success(orderService.getOrderById(id))); }
+    @GetMapping("/{id}") @Operation(summary="Get order")
+    public ResponseEntity<ApiResponse<OrderResponse>> getById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        OrderResponse order = orderService.getOrderById(id);
+        String role = principal.getRole();
+        if (!"ADMIN".equals(role) && !order.getCustomerId().equals(principal.getId())
+                && !"CORPORATE".equals(role)) {
+            throw new org.springframework.security.access.AccessDeniedException("Bu siparişe erişim yetkiniz yok.");
+        }
+        if ("CORPORATE".equals(role) && !"ADMIN".equals(role)) {
+            orderService.assertStoreOwnsOrder(id, principal.getId());
+        }
+        return ResponseEntity.ok(ApiResponse.success(order));
+    }
     @PostMapping @PreAuthorize("hasRole('INDIVIDUAL')") @Operation(summary="Place order") public ResponseEntity<ApiResponse<OrderResponse>> create(@Valid @RequestBody CreateOrderRequest req) { return ResponseEntity.ok(ApiResponse.success("Order placed",orderService.createOrder(req))); }
     @PatchMapping("/{id}/status") @PreAuthorize("hasAnyRole('CORPORATE','ADMIN')") @Operation(summary="Update status") public ResponseEntity<ApiResponse<OrderResponse>> updateStatus(@PathVariable Long id, @RequestBody Map<String,String> body) { return ResponseEntity.ok(ApiResponse.success(orderService.updateOrderStatus(id,body.get("status")))); }
     @GetMapping("/store/{storeId}") @PreAuthorize("hasAnyRole('CORPORATE','ADMIN')") public ResponseEntity<ApiResponse<Page<OrderResponse>>> byStore(@PathVariable Long storeId, @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size) { return ResponseEntity.ok(ApiResponse.success(orderService.getOrdersByStore(storeId,PageRequest.of(page,size,Sort.by("orderDate").descending())))); }

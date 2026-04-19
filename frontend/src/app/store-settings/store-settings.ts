@@ -28,10 +28,11 @@ export class StoreSettings implements OnInit {
   editForm = { name: '', description: '', address: '', email: '' };
   saving = false;
 
-  // New store (CORPORATE)
+  // New store (ADMIN only)
   showNewForm = false;
-  newForm = { name: '', description: '', address: '', email: '' };
+  newForm = { name: '', description: '', address: '', email: '', ownerEmail: '', ownerPassword: '' };
   creating = false;
+  newStoreCredentials: { email: string; password: string } | null = null;
 
   readonly lowStockThreshold = 10;
 
@@ -80,7 +81,7 @@ export class StoreSettings implements OnInit {
   saveEdit() {
     this.saving = true;
     this.http.put<any>(`${environment.apiUrl}/stores/${this.editingStore.id}`, this.editForm).subscribe({
-      next: res => {
+      next: () => {
         const idx = this.stores.findIndex(s => s.id === this.editingStore.id);
         if (idx >= 0) this.stores[idx] = { ...this.stores[idx], ...this.editForm };
         this.editingStore = null;
@@ -93,11 +94,29 @@ export class StoreSettings implements OnInit {
   }
 
   createStore() {
+    if (!this.newForm.name.trim()) { this.showToast('Mağaza adı zorunludur.', 'error'); return; }
     this.creating = true;
-    this.http.post<any>(`${environment.apiUrl}/stores`, this.newForm).subscribe({
+
+    // Admin yeni mağaza oluştururken rastgele şifre üretir
+    const generatedPassword = this.generatePassword();
+    const payload = {
+      name: this.newForm.name,
+      description: this.newForm.description,
+      address: this.newForm.address,
+      email: this.newForm.email,
+      ownerEmail: this.newForm.ownerEmail,
+      ownerPassword: generatedPassword
+    };
+
+    this.http.post<any>(`${environment.apiUrl}/stores`, payload).subscribe({
       next: res => {
-        this.stores.push(res?.data ?? this.newForm);
-        this.newForm = { name: '', description: '', address: '', email: '' };
+        const created = res?.data ?? payload;
+        this.stores.push(created);
+        this.newStoreCredentials = {
+          email: this.newForm.ownerEmail || (created.owner?.email ?? ''),
+          password: generatedPassword
+        };
+        this.newForm = { name: '', description: '', address: '', email: '', ownerEmail: '', ownerPassword: '' };
         this.showNewForm = false;
         this.creating = false;
         this.showToast('Mağaza oluşturuldu.', 'success');
@@ -105,6 +124,11 @@ export class StoreSettings implements OnInit {
       },
       error: () => { this.creating = false; this.showToast('Oluşturma başarısız.', 'error'); }
     });
+  }
+
+  dismissCredentials() {
+    this.newStoreCredentials = null;
+    this.cdr.detectChanges();
   }
 
   toggleStore(store: any) {
@@ -119,6 +143,18 @@ export class StoreSettings implements OnInit {
     });
   }
 
+  deleteStore(store: any) {
+    if (!confirm(`"${store.name}" mağazasını kalıcı olarak silmek istediğinizden emin misiniz?`)) return;
+    this.http.delete<any>(`${environment.apiUrl}/stores/${store.id}`).subscribe({
+      next: () => {
+        this.stores = this.stores.filter(s => s.id !== store.id);
+        this.showToast('Mağaza silindi.', 'success');
+        this.cdr.detectChanges();
+      },
+      error: () => this.showToast('Silme işlemi başarısız.', 'error')
+    });
+  }
+
   showToast(message: string, type: 'success' | 'error') {
     this.toast = { visible: true, message, type };
     this.cdr.detectChanges();
@@ -129,6 +165,13 @@ export class StoreSettings implements OnInit {
     if (stock === 0) return 'stock-zero';
     if (stock <= 5) return 'stock-critical';
     return 'stock-low';
+  }
+
+  private generatePassword(): string {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
+    let pwd = '';
+    for (let i = 0; i < 12; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
+    return pwd;
   }
 
   logout() { this.authService.logout(); }

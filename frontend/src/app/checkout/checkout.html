@@ -46,29 +46,35 @@
               </div>
 
               <div class="form-grid-2">
-                <div class="field">
+                <div class="field" [class.field-error]="fieldErrors['fullName']">
                   <label>Ad Soyad *</label>
                   <input type="text" [(ngModel)]="shipping.fullName" placeholder="Mert Ayhan">
+                  @if (fieldErrors['fullName']) { <span class="field-hint-error">{{ fieldErrors['fullName'] }}</span> }
                 </div>
-                <div class="field">
+                <div class="field" [class.field-error]="fieldErrors['email']">
                   <label>E-posta *</label>
                   <input type="email" [(ngModel)]="shipping.email" placeholder="ornek@email.com">
+                  @if (fieldErrors['email']) { <span class="field-hint-error">{{ fieldErrors['email'] }}</span> }
                 </div>
-                <div class="field">
-                  <label>Telefon</label>
+                <div class="field" [class.field-error]="fieldErrors['phone']">
+                  <label>Telefon *</label>
                   <input type="tel" [(ngModel)]="shipping.phone" placeholder="+90 5xx xxx xx xx">
+                  @if (fieldErrors['phone']) { <span class="field-hint-error">{{ fieldErrors['phone'] }}</span> }
                 </div>
-                <div class="field">
+                <div class="field" [class.field-error]="fieldErrors['city']">
                   <label>Şehir *</label>
                   <input type="text" [(ngModel)]="shipping.city" placeholder="İstanbul">
+                  @if (fieldErrors['city']) { <span class="field-hint-error">{{ fieldErrors['city'] }}</span> }
                 </div>
-                <div class="field field-full">
+                <div class="field field-full" [class.field-error]="fieldErrors['address']">
                   <label>Açık Adres *</label>
                   <input type="text" [(ngModel)]="shipping.address" placeholder="Mahalle, cadde, sokak, bina no, daire no">
+                  @if (fieldErrors['address']) { <span class="field-hint-error">{{ fieldErrors['address'] }}</span> }
                 </div>
-                <div class="field">
+                <div class="field" [class.field-error]="fieldErrors['zipCode']">
                   <label>Posta Kodu</label>
                   <input type="text" [(ngModel)]="shipping.zipCode" placeholder="34000">
+                  @if (fieldErrors['zipCode']) { <span class="field-hint-error">{{ fieldErrors['zipCode'] }}</span> }
                 </div>
                 <div class="field">
                   <label>Ülke</label>
@@ -110,7 +116,7 @@
                   </div>
                   <div class="method-logos">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" class="card-logo">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="MC" class="card-logo">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.jpg" alt="MC" class="card-logo">
                   </div>
                 </label>
 

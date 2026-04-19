@@ -1,0 +1,90 @@
+<div class="dashboard-shell">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span class="highlight">Menekşe</span>Store</div>
+
+    @if (isAdmin) {
+      <!-- ── ADMIN Menüsü ── -->
+      <div class="menu-section">
+        <p class="menu-label">GENEL</p>
+        <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" class="menu-item">
+          <span class="menu-icon">🏠</span> Genel Bakış
+        </a>
+      </div>
+      <div class="menu-section">
+        <p class="menu-label">YÖNETİM</p>
+        <a routerLink="/dashboard" [queryParams]="{tab:'users'}"      routerLinkActive="active" class="menu-item"><span class="menu-icon">👥</span> Kullanıcılar</a>
+        <a routerLink="/dashboard" [queryParams]="{tab:'stores'}"     routerLinkActive="active" class="menu-item"><span class="menu-icon">🏪</span> Mağazalar</a>
+        <a routerLink="/dashboard" [queryParams]="{tab:'reviews'}"    routerLinkActive="active" class="menu-item"><span class="menu-icon">⭐</span> Değerlendirmeler</a>
+        <a routerLink="/dashboard" [queryParams]="{tab:'comparison'}" routerLinkActive="active" class="menu-item"><span class="menu-icon">📊</span> Mağaza Karşılaştırma</a>
+      </div>
+      <div class="menu-section">
+        <p class="menu-label">ANALİTİK</p>
+        <a routerLink="/dashboard" [queryParams]="{tab:'analytics'}" routerLinkActive="active" class="menu-item"><span class="menu-icon">📈</span> Dashboard Analytics</a>
+        <a routerLink="/dashboard" [queryParams]="{tab:'audit'}"     routerLinkActive="active" class="menu-item"><span class="menu-icon">📋</span> Aktivite Logu</a>
+      </div>
+      <div class="menu-section">
+        <p class="menu-label">MAĞAZA</p>
+        <a routerLink="/dashboard/products"       routerLinkActive="active" class="menu-item"><span class="menu-icon">📦</span> Ürünler</a>
+        <a routerLink="/dashboard/orders"         routerLinkActive="active" class="menu-item"><span class="menu-icon">🛒</span> Siparişler</a>
+        <a routerLink="/dashboard/store-settings" routerLinkActive="active" class="menu-item"><span class="menu-icon">⚙️</span> Mağaza Ayarları</a>
+        <a routerLink="/dashboard/shipments"      routerLinkActive="active" class="menu-item"><span class="menu-icon">🚚</span> Kargolar</a>
+      </div>
+      <div class="menu-section">
+        <p class="menu-label">ARAÇLAR</p>
+        <a routerLink="/dashboard/ai-assistant" routerLinkActive="active" class="menu-item">
+          <span class="menu-icon">🤖</span> AI Asistan
+          <span class="menu-badge">New</span>
+        </a>
+      </div>
+    } @else {
+      <!-- ── CORPORATE Menüsü ── -->
+      <div class="menu-section">
+        <p class="menu-label">GENEL</p>
+        <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" class="menu-item">
+          <span class="menu-icon">🏠</span> Genel Bakış
+        </a>
+      </div>
+      <div class="menu-section">
+        <p class="menu-label">ANALİTİK</p>
+        <a routerLink="/dashboard" [queryParams]="{tab:'analytics'}" routerLinkActive="active" class="menu-item"><span class="menu-icon">📈</span> Dashboard Analytics</a>
+      </div>
+      <div class="menu-section">
+        <p class="menu-label">MAĞAZA</p>
+        <a routerLink="/dashboard/products"       routerLinkActive="active" class="menu-item"><span class="menu-icon">📦</span> Ürünler</a>
+        <a routerLink="/dashboard/product-create"  routerLinkActive="active" class="menu-item"><span class="menu-icon">➕</span> Ürün Ekle</a>
+        <a routerLink="/dashboard/orders"         routerLinkActive="active" class="menu-item"><span class="menu-icon">🛒</span> Siparişler</a>
+        <a routerLink="/dashboard/store-settings" routerLinkActive="active" class="menu-item"><span class="menu-icon">⚙️</span> Mağaza Ayarları</a>
+        <a routerLink="/dashboard/shipments"      routerLinkActive="active" class="menu-item"><span class="menu-icon">🚚</span> Kargolar</a>
+        <a routerLink="/dashboard" [queryParams]="{tab:'reviews'}" routerLinkActive="active" class="menu-item"><span class="menu-icon">⭐</span> Değerlendirmeler</a>
+      </div>
+      <div class="menu-section">
+        <p class="menu-label">ARAÇLAR</p>
+        <a routerLink="/dashboard/ai-assistant" routerLinkActive="active" class="menu-item">
+          <span class="menu-icon">🤖</span> AI Asistan
+          <span class="menu-badge">New</span>
+        </a>
+      </div>
+    }
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      <a routerLink="/products" class="storefront-btn">🛍️ Ana Sayfaya Dön</a>
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">{{ (user?.fullName ?? 'U')[0] }}</div>
+        <div class="sidebar-user-info">
+          <span class="sidebar-name">{{ user?.fullName?.split(' ')[0] ?? 'Kullanıcı' }}</span>
+          <span class="sidebar-role">{{ roleLabel }}</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()">Çıkış</button>
+    </div>
+  </aside>
+
+  <!-- ── Page Content ─────────────────────────────────────────── -->
+  <main class="layout-content">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

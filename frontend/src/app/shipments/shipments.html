@@ -50,6 +50,13 @@
       </div>
     </div>
 
+    <div class="filter-bar">
+      <select [(ngModel)]="sortOrder" (change)="onSortChange()" class="sort-select">
+        <option value="newest">En Yeni</option>
+        <option value="oldest">En Eski</option>
+      </select>
+    </div>
+
     @if (loading) {
       <div class="loading-state"><div class="spinner"></div><p>Yükleniyor...</p></div>
     } @else if (shipments.length === 0) {

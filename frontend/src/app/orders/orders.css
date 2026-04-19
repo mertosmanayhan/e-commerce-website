@@ -61,3 +61,9 @@
 .page-btn:hover:not(:disabled) { border-color: #8c52ff; color: #8c52ff; }
 .page-btn:disabled { opacity: .4; cursor: not-allowed; }
 .page-info { font-size: 14px; color: #666; font-weight: 600; }
+
+/* Clickable item rows */
+.clickable-item { cursor: pointer; border-radius: 8px; transition: background .15s; position: relative; }
+.clickable-item:hover { background: #f8f5ff; }
+.item-link-icon { font-size: 20px; color: #c4b5fd; margin-left: auto; flex-shrink: 0; transition: transform .15s; }
+.clickable-item:hover .item-link-icon { transform: translateX(3px); color: #8c52ff; }

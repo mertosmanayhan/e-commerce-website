@@ -5,68 +5,83 @@
     <button routerLink="/products" class="back-btn">← Alışverişe Dön</button>
   </div>
 
-  <div *ngIf="cartItems.length === 0" class="empty-cart-container">
-    <div class="empty-icon">🛒</div>
-    <h3>Sepetin şu an boş</h3>
-    <p>Sepetini hemen doldurmak için binlerce ürünü keşfetmeye başla!</p>
-    <button routerLink="/products" class="start-shopping-btn">Ürünleri İncele</button>
-  </div>
-
-  <div *ngIf="cartItems.length > 0" class="cart-grid">
-
-    <div class="cart-items-section">
-      <div class="items-header">
-        <b>Sepetteki Ürünler</b>
-      </div>
-
-      <div *ngFor="let item of cartItems" class="cart-item">
-
-        <div class="item-info">
-          <div class="item-icon" style="width: 70px; height: 70px; border-radius: 12px; overflow: hidden; background: #f8f9fa; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
-            <img [src]="item.product.icon || item.product.imageUrl" [alt]="item.product.name" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-          </div>
-          <div class="item-details">
-            <h4>{{ item.product.name }}</h4>
-            <div class="item-sku">Stok Kodu: {{ item.product.sku }}</div>
-          </div>
-        </div>
-
-        <div class="quantity-controls">
-          <button (click)="decrease(item.product.id)" class="qty-btn">-</button>
-          <div class="qty-number">{{ item.quantity }}</div>
-          <button (click)="increase(item.product.id)" class="qty-btn plus-btn">+</button>
-        </div>
-
-        <div class="price-actions">
-          <div class="item-price">${{ (item.product.price * item.quantity).toFixed(2) }}</div>
-          <button (click)="remove(item.product.id)" class="remove-btn">🗑️ Ürünü Sil</button>
-        </div>
-
-      </div>
+  @if (cartItems.length === 0) {
+    <div class="empty-cart-container">
+      <div class="empty-icon">🛒</div>
+      <h3>Sepetin şu an boş</h3>
+      <p>Sepetini hemen doldurmak için binlerce ürünü keşfetmeye başla!</p>
+      <button routerLink="/products" class="start-shopping-btn">Ürünleri İncele</button>
     </div>
+  }
 
-    <div class="order-summary-section">
-      <h3>Sipariş Özeti</h3>
+  @if (cartItems.length > 0) {
+    <div class="cart-grid">
 
-      <div class="summary-row">
-        <span>Ürün Toplamı</span>
-        <span class="fw-bold">${{ total.toFixed(2) }}</span>
+      <div class="cart-items-section">
+        <div class="items-header">
+          <b>Sepetteki Ürünler</b>
+        </div>
+
+        @for (item of cartItems; track item.product.id) {
+          <div class="cart-item">
+
+            <div class="item-info">
+              <div class="item-icon" style="width: 70px; height: 70px; border-radius: 12px; overflow: hidden; background: #f8f9fa; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                <img [src]="item.product.icon || item.product.imageUrl" [alt]="item.product.name" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+              </div>
+              <div class="item-details">
+                <h4>{{ item.product.name }}</h4>
+                <div class="item-sku">Stok Kodu: {{ item.product.sku }}</div>
+              </div>
+            </div>
+
+            <div class="quantity-controls">
+              <button (click)="decrease(item.product.id)" class="qty-btn">-</button>
+              <div class="qty-number">{{ item.quantity }}</div>
+              <button (click)="increase(item.product.id)" class="qty-btn plus-btn">+</button>
+            </div>
+
+            <div class="price-actions">
+              <div class="item-price">${{ (item.product.price * item.quantity).toFixed(2) }}</div>
+              <button (click)="remove(item.product.id)" class="remove-btn">🗑️ Ürünü Sil</button>
+            </div>
+
+          </div>
+        }
       </div>
 
-      <div class="summary-row">
-        <span>Kargo Ücreti</span>
-        <span class="free-shipping">Bedava</span>
+      <div class="order-summary-section">
+        <h3>Sipariş Özeti</h3>
+
+        <div class="summary-row">
+          <span>Ürün Toplamı</span>
+          <span class="fw-bold">${{ total.toFixed(2) }}</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Kargo Ücreti</span>
+          <span class="free-shipping">Bedava</span>
+        </div>
+
+        <div class="summary-total-row">
+          <span>Toplam</span>
+          <span class="total-price">${{ total.toFixed(2) }}</span>
+        </div>
+
+        @if (!isLoggedIn) {
+          <div class="guest-login-banner">
+            <span>🔒 Sipariş verebilmek için giriş yapmalısınız.</span>
+            <a routerLink="/login" [queryParams]="{returnUrl: '/checkout'}">Giriş Yap</a>
+            <span> veya </span>
+            <a routerLink="/signup">Kayıt Ol</a>
+          </div>
+        }
+
+        <button class="confirm-cart-btn" (click)="goToCheckout()">
+          {{ isLoggedIn ? 'Sepeti Onayla' : 'Giriş Yap & Sipariş Ver' }}
+        </button>
       </div>
 
-      <div class="summary-total-row">
-        <span>Toplam</span>
-        <span class="total-price">${{ total.toFixed(2) }}</span>
-      </div>
-
-      <button class="confirm-cart-btn" routerLink="/checkout">
-        Sepeti Onayla
-      </button>
     </div>
-
-  </div>
+  }
 </div>

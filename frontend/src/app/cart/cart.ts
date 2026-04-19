@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { CartService, CartItem } from '../cart.service';
 
 @Component({
@@ -8,15 +8,17 @@ import { CartService, CartItem } from '../cart.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './cart.html',
-  styleUrl: './cart.css' // CSS dosyamızı buraya bağladık!
+  styleUrl: './cart.css'
 })
 export class CartComponent implements OnInit {
   cartItems: CartItem[] = [];
   total: number = 0;
+  isLoggedIn = false;
 
-  constructor(private cartService: CartService) {}
+  constructor(private cartService: CartService, private router: Router) {}
 
   ngOnInit() {
+    this.isLoggedIn = !!localStorage.getItem('token');
     this.cartService.items$.subscribe(items => {
       this.cartItems = items;
       this.total = this.cartService.getCartTotal();
@@ -24,15 +26,15 @@ export class CartComponent implements OnInit {
     this.cartService.loadCart();
   }
 
-  increase(productId: number) {
-    this.cartService.increaseQuantity(productId);
-  }
+  increase(productId: number) { this.cartService.increaseQuantity(productId); }
+  decrease(productId: number) { this.cartService.decreaseQuantity(productId); }
+  remove(productId: number)   { this.cartService.removeFromCart(productId); }
 
-  decrease(productId: number) {
-    this.cartService.decreaseQuantity(productId);
-  }
-
-  remove(productId: number) {
-    this.cartService.removeFromCart(productId);
+  goToCheckout() {
+    if (!this.isLoggedIn) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: '/checkout' } });
+    } else {
+      this.router.navigate(['/checkout']);
+    }
   }
 }

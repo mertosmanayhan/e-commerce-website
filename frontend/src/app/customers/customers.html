@@ -77,11 +77,12 @@
               <th>E-posta</th>
               <th>Rol</th>
               <th>Durum</th>
+              <th>İşlemler</th>
             </tr>
           </thead>
           <tbody>
             @if (filtered.length === 0) {
-              <tr><td colspan="5" class="empty-row">Kullanıcı bulunamadı</td></tr>
+              <tr><td colspan="6" class="empty-row">Kullanıcı bulunamadı</td></tr>
             }
             @for (u of filtered; track u.id; let i = $index) {
               <tr>
@@ -94,7 +95,17 @@
                 </td>
                 <td class="email-cell">{{ u.email ?? '-' }}</td>
                 <td><span class="role-badge" [class]="getRoleBadge(u.role)">{{ u.role }}</span></td>
-                <td><span class="status-active">Aktif</span></td>
+                <td>
+                  <span [class]="u.suspended ? 'status-suspended' : 'status-active'">
+                    {{ u.suspended ? 'Askıda' : 'Aktif' }}
+                  </span>
+                </td>
+                <td class="action-cell">
+                  <button class="action-btn toggle" (click)="toggleSuspend(u)">
+                    {{ u.suspended ? '✅ Aktif Et' : '🔴 Askıya Al' }}
+                  </button>
+                  <button class="action-btn delete" (click)="deleteUser(u)">🗑️ Sil</button>
+                </td>
               </tr>
             }
           </tbody>

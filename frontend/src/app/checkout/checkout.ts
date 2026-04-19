@@ -25,6 +25,7 @@ export class Checkout implements OnInit, OnDestroy {
   step: 'shipping' | 'payment' | 'success' = 'shipping';
 
   shipping = { fullName: '', email: '', phone: '', address: '', city: '', zipCode: '', country: 'Türkiye' };
+  fieldErrors: Record<string, string> = {};
 
   paymentMethod: 'card' | 'cash' = 'card';
 
@@ -98,10 +99,48 @@ export class Checkout implements OnInit, OnDestroy {
   }
 
   goToPayment() {
-    if (!this.shipping.fullName || !this.shipping.address || !this.shipping.city) {
-      this.errorMessage = 'Lütfen tüm teslimat bilgilerini doldurun.';
+    this.fieldErrors = {};
+    const s = this.shipping;
+
+    if (!s.fullName.trim()) {
+      this.fieldErrors['fullName'] = 'Ad Soyad boş bırakılamaz.';
+    } else if (!/^[a-zA-ZğüşıöçĞÜŞİÖÇ\s]{2,60}$/.test(s.fullName.trim())) {
+      this.fieldErrors['fullName'] = 'Ad Soyad yalnızca harf içerebilir (2-60 karakter).';
+    }
+
+    if (!s.email.trim()) {
+      this.fieldErrors['email'] = 'E-posta boş bırakılamaz.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.email.trim())) {
+      this.fieldErrors['email'] = 'Geçerli bir e-posta adresi girin.';
+    }
+
+    if (!s.phone.trim()) {
+      this.fieldErrors['phone'] = 'Telefon numarası boş bırakılamaz.';
+    } else if (!/^(\+?\d[\d\s\-]{7,15})$/.test(s.phone.trim())) {
+      this.fieldErrors['phone'] = 'Geçerli bir telefon numarası girin (örn: +90 5xx xxx xx xx).';
+    }
+
+    if (!s.address.trim()) {
+      this.fieldErrors['address'] = 'Adres boş bırakılamaz.';
+    } else if (s.address.trim().length < 10) {
+      this.fieldErrors['address'] = 'Adres en az 10 karakter olmalıdır.';
+    }
+
+    if (!s.city.trim()) {
+      this.fieldErrors['city'] = 'Şehir boş bırakılamaz.';
+    } else if (!/^[a-zA-ZğüşıöçĞÜŞİÖÇ\s]{2,50}$/.test(s.city.trim())) {
+      this.fieldErrors['city'] = 'Şehir yalnızca harf içerebilir.';
+    }
+
+    if (s.zipCode.trim() && !/^\d{4,10}$/.test(s.zipCode.trim())) {
+      this.fieldErrors['zipCode'] = 'Posta kodu yalnızca rakam içerebilir (4-10 hane).';
+    }
+
+    if (Object.keys(this.fieldErrors).length > 0) {
+      this.errorMessage = 'Lütfen hatalı alanları düzeltin.';
       return;
     }
+
     this.errorMessage = '';
     this.step = 'payment';
     this.cdr.detectChanges();

@@ -65,20 +65,12 @@ export class ChatWidget implements AfterViewChecked {
         this.cdr.detectChanges();
       },
       error: () => {
-        // Direct fallback to Python service
-        this.http.post<any>('http://localhost:8000/api/chat/ask',
-          { message: q, role: this.authService.getCurrentUser()?.role ?? 'INDIVIDUAL' }
-        ).subscribe({
-          next: d => { this.pushAiMessage(d); this.loading = false; this.cdr.detectChanges(); },
-          error: () => {
-            this.messages.push({
-              sender: 'ai',
-              text:   '⚠️ AI servisine ulaşılamadı.\n\nLütfen şunları kontrol edin:\n1. Backend: `mvn spring-boot:run`\n2. Chatbot: `python main.py`'
-            });
-            this.loading = false;
-            this.cdr.detectChanges();
-          }
+        this.messages.push({
+          sender: 'ai',
+          text:   '⚠️ AI servisine ulaşılamadı.\n\nLütfen şunları kontrol edin:\n1. Backend: `mvn spring-boot:run`\n2. Chatbot: `python main.py`'
         });
+        this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -91,6 +83,14 @@ export class ChatWidget implements AfterViewChecked {
   }
 
   formatText(text: string): string {
-    return text.replace(/\n/g, '<br>').replace(/•/g, '&bull;');
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;')
+      .replace(/\n/g, '<br>')
+      .replace(/•/g, '&bull;')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
   }
 }

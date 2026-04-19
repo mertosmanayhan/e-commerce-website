@@ -26,13 +26,9 @@ public class StoreController {
     @PreAuthorize("hasAnyRole('CORPORATE', 'ADMIN')")
     public ResponseEntity<ApiResponse<List<StoreResponse>>> getAll(
             @AuthenticationPrincipal UserPrincipal principal) {
-        List<StoreResponse> stores;
-        if ("ADMIN".equals(principal.getRole())) {
-            stores = storeService.getAllStores();
-        } else {
-            // CORPORATE: sadece kendi mağazaları
-            stores = storeService.getStoresByOwner(principal.getId());
-        }
+        List<StoreResponse> stores = "ADMIN".equals(principal.getRole())
+                ? storeService.getAllStores()
+                : storeService.getStoresByOwner(principal.getId());
         return ResponseEntity.ok(ApiResponse.success(stores));
     }
 
@@ -43,7 +39,7 @@ public class StoreController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('CORPORATE')")
+    @PreAuthorize("hasAnyRole('CORPORATE', 'ADMIN')")
     public ResponseEntity<ApiResponse<StoreResponse>> create(@Valid @RequestBody StoreRequest req) {
         return ResponseEntity.ok(ApiResponse.success("Created", storeService.createStore(req)));
     }
@@ -56,8 +52,15 @@ public class StoreController {
     }
 
     @PatchMapping("/{id}/toggle")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('CORPORATE', 'ADMIN')")
     public ResponseEntity<ApiResponse<StoreResponse>> toggle(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(storeService.toggleStoreStatus(id)));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+        storeService.deleteStore(id);
+        return ResponseEntity.ok(ApiResponse.success("Deleted", null));
     }
 }

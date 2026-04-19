@@ -6,35 +6,51 @@
       <button routerLink="/products" style="padding: 10px 20px; background: white; border: 1px solid #dcdde1; border-radius: 8px; cursor: pointer; font-weight: bold;">← Alışverişe Dön</button>
     </div>
 
-    <div *ngIf="favorites.length === 0" style="text-align: center; background: white; padding: 60px 20px; border-radius: 12px; border: 1px solid #eaeaea;">
-      <div style="font-size: 60px; margin-bottom: 20px;">💔</div>
-      <h3 style="color: #2c3e50;">Favori Listeniz Boş</h3>
-      <p style="color: #888;">Hemen ürünleri inceleyin ve beğendiklerinizi kalp ikonuna tıklayarak buraya ekleyin.</p>
-    </div>
-
-    <div class="product-grid" *ngIf="favorites.length > 0">
-      <div class="product-card" *ngFor="let product of favorites">
-
-        <button class="wishlist-btn" (click)="removeFromWishlist(product)" style="border-color: #ff4757; color: #ff4757;">❌</button>
-
-        <div style="width: 100%; height: 180px; overflow: hidden; border-radius: 12px 12px 0 0; background: #f0f0f0;">
-          <img [src]="product.imageUrl" [alt]="product.name" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div class="card-content">
-          <div class="product-info">
-            <span class="category-tag">{{ product.category }}</span>
-            <h3 class="product-name">{{ product.name }}</h3>
-          </div>
-          <div class="card-footer">
-            <div class="product-price">${{ product.price }}</div>
-            <div class="action-buttons">
-              <button class="add-cart-btn" (click)="addToCart(product)">Sepete Ekle</button>
-            </div>
-          </div>
-        </div>
-
+    @if (!isLoggedIn) {
+      <div class="guest-login-banner" style="background: #fff8e1; border: 1px solid #ffe082; border-radius: 10px; padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #7c5c00;">
+        <span>⭐ Favorileriniz yalnızca bu cihazda saklanıyor.</span>
+        <a routerLink="/login" [queryParams]="{returnUrl: '/wishlist'}" style="font-weight: bold; color: #e65100; text-decoration: underline;">Giriş yapın</a>
+        <span>veya</span>
+        <a routerLink="/signup" style="font-weight: bold; color: #e65100; text-decoration: underline;">kayıt olun</a>
+        <span>tüm cihazlarınızda senkronize olsun.</span>
       </div>
-    </div>
+    }
+
+    @if (favorites.length === 0) {
+      <div style="text-align: center; background: white; padding: 60px 20px; border-radius: 12px; border: 1px solid #eaeaea;">
+        <div style="font-size: 60px; margin-bottom: 20px;">💔</div>
+        <h3 style="color: #2c3e50;">Favori Listeniz Boş</h3>
+        <p style="color: #888;">Hemen ürünleri inceleyin ve beğendiklerinizi kalp ikonuna tıklayarak buraya ekleyin.</p>
+      </div>
+    }
+
+    @if (favorites.length > 0) {
+      <div class="product-grid">
+        @for (product of favorites; track product.id) {
+          <div class="product-card">
+
+            <button class="wishlist-btn" (click)="removeFromWishlist(product)" style="border-color: #ff4757; color: #ff4757;">❌</button>
+
+            <div style="width: 100%; height: 180px; overflow: hidden; border-radius: 12px 12px 0 0; background: #f0f0f0;">
+              <img [src]="product.imageUrl" [alt]="product.name" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div class="card-content">
+              <div class="product-info">
+                <span class="category-tag">{{ product.category }}</span>
+                <h3 class="product-name">{{ product.name }}</h3>
+              </div>
+              <div class="card-footer">
+                <div class="product-price">${{ product.price }}</div>
+                <div class="action-buttons">
+                  <button class="add-cart-btn" (click)="addToCart(product)">Sepete Ekle</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
+    }
 
   </div>
 </div>

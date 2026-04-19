@@ -32,6 +32,14 @@ public class OrderService {
         this.userRepository = ur; this.shipmentRepository = sr;
     }
 
+    public void assertStoreOwnsOrder(Long orderId, Long ownerId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
+        boolean owned = order.getItems().stream()
+                .anyMatch(i -> i.getProduct().getStore().getOwner().getId().equals(ownerId));
+        if (!owned) throw new org.springframework.security.access.AccessDeniedException("Bu siparişe erişim yetkiniz yok.");
+    }
+
     public Page<OrderResponse> getOrdersByUser(Long userId, Pageable p) { return orderRepository.findByUserId(userId, p).map(OrderResponse::fromEntity); }
     public Page<OrderResponse> getOrdersByStore(Long storeId, Pageable p) { return orderRepository.findByStoreId(storeId, p).map(OrderResponse::fromEntity); }
     public Page<OrderResponse> getOrdersByStoreOwner(Long ownerId, Pageable p) { return orderRepository.findByStoreOwnerId(ownerId, p).map(OrderResponse::fromEntity); }

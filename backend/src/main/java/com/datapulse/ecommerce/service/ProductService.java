@@ -6,9 +6,12 @@ import com.datapulse.ecommerce.entity.Category;
 import com.datapulse.ecommerce.entity.Product;
 import com.datapulse.ecommerce.entity.Store;
 import com.datapulse.ecommerce.exception.ResourceNotFoundException;
+import com.datapulse.ecommerce.repository.CartItemRepository;
 import com.datapulse.ecommerce.repository.CategoryRepository;
+import com.datapulse.ecommerce.repository.OrderItemRepository;
 import com.datapulse.ecommerce.repository.ProductRepository;
 import com.datapulse.ecommerce.repository.StoreRepository;
+import com.datapulse.ecommerce.repository.WishlistItemRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,7 +23,19 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final StoreRepository storeRepository;
-    public ProductService(ProductRepository pr, CategoryRepository cr, StoreRepository sr) { this.productRepository=pr; this.categoryRepository=cr; this.storeRepository=sr; }
+    private final CartItemRepository cartItemRepository;
+    private final WishlistItemRepository wishlistItemRepository;
+    private final OrderItemRepository orderItemRepository;
+
+    public ProductService(ProductRepository pr, CategoryRepository cr, StoreRepository sr,
+                          CartItemRepository ci, WishlistItemRepository wi, OrderItemRepository oi) {
+        this.productRepository = pr;
+        this.categoryRepository = cr;
+        this.storeRepository = sr;
+        this.cartItemRepository = ci;
+        this.wishlistItemRepository = wi;
+        this.orderItemRepository = oi;
+    }
 
     public Page<ProductResponse> getAllProducts(Pageable p) { return productRepository.findAll(p).map(ProductResponse::fromEntity); }
     public ProductResponse getProductById(Long id) { return ProductResponse.fromEntity(productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product","id",id))); }
@@ -47,8 +62,15 @@ public class ProductService {
         productRepository.save(p); return ProductResponse.fromEntity(p);
     }
 
-    @Transactional public void deleteProduct(Long id) {
+    @Transactional
+    public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) throw new ResourceNotFoundException("Product","id",id);
+        // Remove FK references before deleting the product
+        cartItemRepository.deleteByProductId(id);
+        wishlistItemRepository.deleteByProductId(id);
+        // Null out order item references (preserve order history, just detach product)
+        orderItemRepository.findByProductId(id).forEach(item -> item.setProduct(null));
+        orderItemRepository.flush();
         productRepository.deleteById(id);
     }
 }

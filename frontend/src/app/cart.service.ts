@@ -156,6 +156,22 @@ export class CartService {
     });
   }
 
+  // Login sonrası misafir sepeti sunucuya aktar, sonra temizle
+  mergeGuestCart() {
+    const raw = localStorage.getItem('guestCart');
+    if (!raw) return;
+    const guestItems: CartItem[] = JSON.parse(raw);
+    if (guestItems.length === 0) return;
+
+    const requests = guestItems.map(item =>
+      this.http.post<any>(`${environment.apiUrl}/cart`, { productId: item.product.id, quantity: item.quantity }).toPromise().catch(() => {})
+    );
+    Promise.all(requests).then(() => {
+      localStorage.removeItem('guestCart');
+      this.loadCart();
+    });
+  }
+
   clearCart() {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (!token) {

@@ -1,0 +1,95 @@
+<main class="main-content">
+
+  <div class="page-header">
+    <div>
+      <h1>📦 Yeni Ürün Ekle</h1>
+      <p class="sub">Mağazanıza yeni bir ürün ekleyin</p>
+    </div>
+    <button class="btn-outline" (click)="cancel()">← Geri Dön</button>
+  </div>
+
+  @if (successMsg) {
+    <div class="alert-success">✅ {{ successMsg }}</div>
+  }
+  @if (errorMsg) {
+    <div class="alert-error">❌ {{ errorMsg }}</div>
+  }
+
+  <div class="form-card" [formGroup]="form">
+    <h3>Ürün Bilgileri</h3>
+
+    <div class="form-grid">
+      <!-- Ürün Adı -->
+      <div class="form-group" [class.has-error]="fieldError('name')">
+        <label>Ürün Adı <span class="required">*</span></label>
+        <input type="text" formControlName="name" placeholder="Örn: Kablosuz Kulaklık" class="form-input">
+        @if (fieldError('name')) {
+          <span class="field-error">{{ fieldError('name') }}</span>
+        }
+      </div>
+
+      <!-- SKU -->
+      <div class="form-group">
+        <label>SKU <span class="optional">(İsteğe bağlı)</span></label>
+        <input type="text" formControlName="sku" placeholder="Örn: KBL-001" class="form-input">
+      </div>
+
+      <!-- Fiyat -->
+      <div class="form-group" [class.has-error]="fieldError('price')">
+        <label>Fiyat (₺) <span class="required">*</span></label>
+        <input type="number" formControlName="price" placeholder="0.00" min="0.01" step="0.01" class="form-input">
+        @if (fieldError('price')) {
+          <span class="field-error">{{ fieldError('price') }}</span>
+        }
+      </div>
+
+      <!-- Stok -->
+      <div class="form-group" [class.has-error]="fieldError('stock')">
+        <label>Stok Adedi <span class="required">*</span></label>
+        <input type="number" formControlName="stock" placeholder="0" min="0" step="1" class="form-input">
+        @if (fieldError('stock')) {
+          <span class="field-error">{{ fieldError('stock') }}</span>
+        }
+      </div>
+
+      <!-- Kategori -->
+      <div class="form-group">
+        <label>Kategori</label>
+        <select formControlName="categoryId" class="form-select">
+          <option [ngValue]="null">Kategori seçin...</option>
+          @for (c of categories; track c.id) {
+            <option [ngValue]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Görsel URL -->
+      <div class="form-group">
+        <label>Görsel URL <span class="optional">(İsteğe bağlı)</span></label>
+        <input type="url" formControlName="imageUrl" placeholder="https://example.com/image.jpg" class="form-input">
+      </div>
+
+      <!-- Açıklama — tam genişlik -->
+      <div class="form-group full-width" [class.has-error]="fieldError('description')">
+        <label>Açıklama <span class="optional">(İsteğe bağlı)</span></label>
+        <textarea formControlName="description" placeholder="Ürün hakkında kısa bir açıklama yazın..." rows="4" class="form-textarea"></textarea>
+        @if (fieldError('description')) {
+          <span class="field-error">{{ fieldError('description') }}</span>
+        }
+      </div>
+    </div>
+
+    <div class="security-note">
+      🔒 Ürün, JWT token'ınızdaki mağaza bilgisine otomatik olarak atanacaktır.
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-primary" (click)="submit()" [disabled]="submitting">
+        @if (submitting) { <span class="btn-spinner"></span> Ekleniyor... }
+        @else { 📦 Ürünü Ekle }
+      </button>
+      <button class="btn-outline" (click)="cancel()" [disabled]="submitting">İptal</button>
+    </div>
+  </div>
+
+</main>

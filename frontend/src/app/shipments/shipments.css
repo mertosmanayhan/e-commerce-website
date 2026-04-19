@@ -28,6 +28,11 @@
 .sub { margin: 0; color: #718096; font-size: 14px; }
 .stat-chip { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; }
 
+/* Filter */
+.filter-bar { display: flex; gap: 12px; margin-bottom: 20px; }
+.sort-select { padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px; background: #fff; outline: none; cursor: pointer; }
+.sort-select:focus { border-color: #8c52ff; }
+
 /* Table */
 .table-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }

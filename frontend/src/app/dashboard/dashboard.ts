@@ -126,8 +126,9 @@ export class Dashboard implements OnInit {
   settingsEditForm = { name: '', description: '', address: '', email: '' };
   settingsSaving = false;
   settingsShowNewForm = false;
-  settingsNewForm = { name: '', description: '', address: '', email: '' };
+  settingsNewForm = { name: '', description: '', address: '', email: '', ownerEmail: '', ownerPassword: '' };
   settingsCreating = false;
+  settingsNewCredentials: { email: string; password: string } | null = null;
   lowStockProducts: any[] = [];
   loadingStock = false;
   showLowStock = false;
@@ -135,6 +136,7 @@ export class Dashboard implements OnInit {
   // ── Shipments ────────────────────────────────────────────────
   shipments: any[] = [];
   shipmentsLoading = false;
+  shipmentSortOrder: 'newest' | 'oldest' = 'newest';
 
   constructor(
     private http: HttpClient,
@@ -405,6 +407,14 @@ export class Dashboard implements OnInit {
   productPrev() { if (this.productPage > 0) { this.productPage--; this.loadProducts(); } }
   productNext() { if (this.productPage < this.productTotalPages - 1) { this.productPage++; this.loadProducts(); } }
 
+  deleteProduct(product: any) {
+    if (!confirm(`"${product.name}" ürününü silmek istediğinizden emin misiniz?`)) return;
+    this.http.delete(`${environment.apiUrl}/products/${product.id}`).subscribe({
+      next: () => { this.showStoreToast('Ürün silindi.', 'success'); this.loadProducts(); },
+      error: () => this.showStoreToast('Ürün silinemedi.', 'error')
+    });
+  }
+
   // ── Orders ───────────────────────────────────────────────────
   loadOrders() {
     this.ordersLoading = true;
@@ -468,11 +478,40 @@ export class Dashboard implements OnInit {
   }
 
   createStore() {
+    if (!this.settingsNewForm.name.trim()) { this.showStoreToast('Mağaza adı zorunludur.', 'error'); return; }
     this.settingsCreating = true;
-    this.http.post<any>(`${environment.apiUrl}/stores`, this.settingsNewForm).subscribe({
-      next: res => { this.settingsStores.push(res?.data ?? this.settingsNewForm); this.settingsNewForm = { name: '', description: '', address: '', email: '' }; this.settingsShowNewForm = false; this.settingsCreating = false; this.showStoreToast('Mağaza oluşturuldu.', 'success'); this.cdr.detectChanges(); },
+    const generatedPassword = this.generateStorePassword();
+    const payload = { ...this.settingsNewForm, ownerPassword: generatedPassword };
+    this.http.post<any>(`${environment.apiUrl}/stores`, payload).subscribe({
+      next: res => {
+        const created = res?.data ?? payload;
+        this.settingsStores.push(created);
+        this.settingsNewCredentials = { email: this.settingsNewForm.ownerEmail || created.owner?.email || '', password: generatedPassword };
+        this.settingsNewForm = { name: '', description: '', address: '', email: '', ownerEmail: '', ownerPassword: '' };
+        this.settingsShowNewForm = false;
+        this.settingsCreating = false;
+        this.showStoreToast('Mağaza oluşturuldu.', 'success');
+        this.cdr.detectChanges();
+      },
       error: () => { this.settingsCreating = false; this.showStoreToast('Oluşturma başarısız.', 'error'); }
     });
+  }
+
+  deleteSettingsStore(store: any) {
+    if (!confirm(`"${store.name}" mağazasını kalıcı olarak silmek istediğinizden emin misiniz?`)) return;
+    this.http.delete<any>(`${environment.apiUrl}/stores/${store.id}`).subscribe({
+      next: () => { this.settingsStores = this.settingsStores.filter(s => s.id !== store.id); this.showStoreToast('Mağaza silindi.', 'success'); this.cdr.detectChanges(); },
+      error: () => this.showStoreToast('Silme işlemi başarısız.', 'error')
+    });
+  }
+
+  dismissSettingsCredentials() { this.settingsNewCredentials = null; this.cdr.detectChanges(); }
+
+  private generateStorePassword(): string {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
+    let pwd = '';
+    for (let i = 0; i < 12; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
+    return pwd;
   }
 
   toggleSettingsStore(store: any) {
@@ -493,10 +532,20 @@ export class Dashboard implements OnInit {
   loadShipments() {
     this.shipmentsLoading = true;
     this.http.get<any>(`${environment.apiUrl}/shipments`).subscribe({
-      next: res => { this.shipments = res?.data ?? []; this.shipmentsLoading = false; this.cdr.detectChanges(); },
+      next: res => { this.shipments = res?.data ?? []; this.applyShipmentSort(); this.shipmentsLoading = false; this.cdr.detectChanges(); },
       error: () => { this.shipmentsLoading = false; this.cdr.detectChanges(); }
     });
   }
+
+  applyShipmentSort() {
+    this.shipments.sort((a, b) => {
+      const da = new Date(a.createdAt ?? a.orderDate ?? 0).getTime();
+      const db = new Date(b.createdAt ?? b.orderDate ?? 0).getTime();
+      return this.shipmentSortOrder === 'newest' ? db - da : da - db;
+    });
+  }
+
+  onShipmentSortChange() { this.applyShipmentSort(); this.cdr.detectChanges(); }
 
   shipmentStatusClass(s: string) { const v = (s || '').toUpperCase(); if (v === 'DELIVERED') return 'status-delivered'; if (v === 'SHIPPED' || v === 'IN_TRANSIT') return 'status-shipped'; if (v === 'CANCELLED') return 'status-cancelled'; return 'status-pending'; }
   shipmentStatusLabel(s: string) { const v = (s || '').toUpperCase(); if (v === 'DELIVERED') return 'Teslim Edildi'; if (v === 'SHIPPED') return 'Kargoda'; if (v === 'IN_TRANSIT') return 'Yolda'; if (v === 'CANCELLED') return 'İptal'; return 'Beklemede'; }

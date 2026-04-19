@@ -17,7 +17,7 @@
   <!-- Navbar -->
   <nav class="navbar">
     <a routerLink="/products" class="logo">
-      <span class="highlight">Data</span>Pulse <span class="logo-sub">| Store</span>
+      <img src="logo.jpg" alt="MenekşeStore" class="navbar-logo-img">
     </a>
     <div class="nav-actions">
       @if (currentUser?.role !== 'CORPORATE' && currentUser?.role !== 'ADMIN') {
@@ -67,7 +67,7 @@
     <!-- Product Info -->
     <div class="info-section">
       <div class="product-meta">
-        <span class="brand-tag">{{ product.storeName || 'DataPulse' }}</span>
+        <span class="brand-tag">{{ product.storeName || 'MenekşeStore' }}</span>
         <span class="category-tag">{{ product.category }}</span>
       </div>
 

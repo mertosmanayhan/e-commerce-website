@@ -14,6 +14,7 @@ import { Product } from '../product.service';
 })
 export class Wishlist implements OnInit {
   favorites: Product[] = [];
+  isLoggedIn = false;
 
   constructor(
     private wishlistService: WishlistService,
@@ -21,6 +22,7 @@ export class Wishlist implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.isLoggedIn = !!localStorage.getItem('token');
     this.wishlistService.favorites$.subscribe(favs => {
       this.favorites = favs;
     });

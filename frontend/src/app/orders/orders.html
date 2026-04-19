@@ -48,7 +48,7 @@
 
             <div class="order-items">
               @for (item of (order.items ?? []); track $index) {
-                <div class="item-row">
+                <div class="item-row clickable-item" (click)="goToProduct(item.productId)" title="Ürünü incele">
                   <div class="item-img">
                     @if (item.imageUrl) {
                       <img [src]="item.imageUrl" [alt]="item.productName">
@@ -61,6 +61,7 @@
                     <span>Adet: {{ item.quantity }}</span>
                   </div>
                   <div class="item-price">${{ (item.unitPrice * item.quantity).toFixed(2) }}</div>
+                  <span class="item-link-icon">›</span>
                 </div>
               }
             </div>
