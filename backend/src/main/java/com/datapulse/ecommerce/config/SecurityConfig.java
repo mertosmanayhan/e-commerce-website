@@ -78,6 +78,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/reviews/product/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/users/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST,   "/api/products/my-store").hasAnyRole("CORPORATE", "ADMIN")
                 .requestMatchers(HttpMethod.POST,   "/api/products/**").hasAnyRole("CORPORATE", "ADMIN")
                 .requestMatchers(HttpMethod.PUT,    "/api/products/**").hasAnyRole("CORPORATE", "ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyRole("CORPORATE", "ADMIN")

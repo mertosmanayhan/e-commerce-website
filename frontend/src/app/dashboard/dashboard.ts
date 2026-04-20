@@ -107,6 +107,10 @@ export class Dashboard implements OnInit {
   productSearch = '';
   productPage = 0;
   productTotalPages = 1;
+  showProductForm = false;
+  productCategories: any[] = [];
+  newProduct = { name: '', description: '', price: null as number | null, stock: null as number | null, categoryId: null as number | null, sku: '', imageUrl: '' };
+  submittingProduct = false;
 
   // ── Orders ───────────────────────────────────────────────────
   orders: any[] = [];
@@ -412,6 +416,35 @@ export class Dashboard implements OnInit {
     this.http.delete(`${environment.apiUrl}/products/${product.id}`).subscribe({
       next: () => { this.showStoreToast('Ürün silindi.', 'success'); this.loadProducts(); },
       error: () => this.showStoreToast('Ürün silinemedi.', 'error')
+    });
+  }
+
+  openProductForm() {
+    this.showProductForm = true;
+    this.newProduct = { name: '', description: '', price: null, stock: null, categoryId: null, sku: '', imageUrl: '' };
+    if (!this.productCategories.length) {
+      this.http.get<any>(`${environment.apiUrl}/categories`).subscribe({
+        next: res => { this.productCategories = res?.data ?? res ?? []; }
+      });
+    }
+  }
+
+  submitProduct() {
+    if (!this.newProduct.name || !this.newProduct.price || this.newProduct.stock === null) {
+      this.showStoreToast('Ürün adı, fiyat ve stok zorunludur.', 'error'); return;
+    }
+    this.submittingProduct = true;
+    this.http.post<any>(`${environment.apiUrl}/products/my-store`, this.newProduct).subscribe({
+      next: () => {
+        this.showStoreToast('Ürün başarıyla eklendi.', 'success');
+        this.showProductForm = false;
+        this.submittingProduct = false;
+        this.loadProducts();
+      },
+      error: err => {
+        this.showStoreToast(err?.error?.message ?? 'Ürün eklenemedi.', 'error');
+        this.submittingProduct = false;
+      }
     });
   }
 

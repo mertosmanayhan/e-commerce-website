@@ -24,7 +24,9 @@ export const routes: Routes = [
   { path: 'store-settings', loadComponent: () => import('./store-settings/store-settings').then(m => m.StoreSettings), canActivate: [roleGuard(['ADMIN', 'CORPORATE'])] },
 
   // Role-based routes — lazy loaded
-  { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard').then(m => m.Dashboard),      canActivate: [roleGuard(['CORPORATE', 'ADMIN'])] },
+  { path: 'dashboard',                loadComponent: () => import('./dashboard/dashboard').then(m => m.Dashboard),             canActivate: [roleGuard(['CORPORATE', 'ADMIN'])] },
+  { path: 'dashboard/products',       loadComponent: () => import('./product-manage/product-manage').then(m => m.ProductManage), canActivate: [roleGuard(['CORPORATE', 'ADMIN'])] },
+  { path: 'dashboard/product-create', loadComponent: () => import('./product-create/product-create').then(m => m.ProductCreate), canActivate: [roleGuard(['CORPORATE'])] },
   { path: 'analytics', loadComponent: () => import('./analytics/analytics').then(m => m.AnalyticsPage),  canActivate: [roleGuard(['INDIVIDUAL'])] },
   { path: 'admin',     redirectTo: 'dashboard', pathMatch: 'full' },
 

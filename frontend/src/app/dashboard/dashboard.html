@@ -501,8 +501,60 @@
       @if (storeToast.visible) { <div class="toast" [class.toast-error]="storeToast.type==='error'">{{ storeToast.message }}</div> }
       <div class="section-header">
         <div><h2>📦 Ürünler</h2><p class="sub-text">Ürün kataloğu</p></div>
-        <button class="btn-refresh" (click)="loadProducts()">Yenile</button>
+        <div style="display:flex;gap:8px">
+          @if (isCorporate) {
+            <button class="btn-primary" (click)="openProductForm()">➕ Ürün Ekle</button>
+          }
+          <button class="btn-refresh" (click)="loadProducts()">Yenile</button>
+        </div>
       </div>
+
+      @if (showProductForm) {
+        <div class="form-card" style="margin-bottom:24px">
+          <h3 style="margin:0 0 16px">Yeni Ürün Ekle</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Ürün Adı <span style="color:red">*</span></label>
+              <input type="text" [(ngModel)]="newProduct.name" placeholder="Ürün adı" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>SKU <span style="opacity:.6">(isteğe bağlı)</span></label>
+              <input type="text" [(ngModel)]="newProduct.sku" placeholder="Örn: ABC-001" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Fiyat (₺) <span style="color:red">*</span></label>
+              <input type="number" [(ngModel)]="newProduct.price" placeholder="0.00" min="0.01" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Stok <span style="color:red">*</span></label>
+              <input type="number" [(ngModel)]="newProduct.stock" placeholder="0" min="0" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>Kategori</label>
+              <select [(ngModel)]="newProduct.categoryId" class="form-select">
+                <option [ngValue]="null">Kategori seçin...</option>
+                @for (c of productCategories; track c.id) {
+                  <option [ngValue]="c.id">{{ c.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Görsel URL <span style="opacity:.6">(isteğe bağlı)</span></label>
+              <input type="url" [(ngModel)]="newProduct.imageUrl" placeholder="https://..." class="form-input">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label>Açıklama <span style="opacity:.6">(isteğe bağlı)</span></label>
+              <textarea [(ngModel)]="newProduct.description" placeholder="Ürün açıklaması..." rows="3" class="form-textarea"></textarea>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:16px">
+            <button class="btn-primary" (click)="submitProduct()" [disabled]="submittingProduct">
+              {{ submittingProduct ? 'Ekleniyor...' : '📦 Ekle' }}
+            </button>
+            <button class="btn-outline" (click)="showProductForm=false">İptal</button>
+          </div>
+        </div>
+      }
       <div class="filters-bar">
         <input type="text" [(ngModel)]="productSearch" placeholder="Ürün veya kategori ara..." class="search-input">
       </div>

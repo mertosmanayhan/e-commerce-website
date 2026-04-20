@@ -10,6 +10,7 @@ import com.datapulse.ecommerce.repository.CartItemRepository;
 import com.datapulse.ecommerce.repository.CategoryRepository;
 import com.datapulse.ecommerce.repository.OrderItemRepository;
 import com.datapulse.ecommerce.repository.ProductRepository;
+import com.datapulse.ecommerce.repository.ReviewRepository;
 import com.datapulse.ecommerce.repository.StoreRepository;
 import com.datapulse.ecommerce.repository.WishlistItemRepository;
 import org.springframework.data.domain.Page;
@@ -26,15 +27,18 @@ public class ProductService {
     private final CartItemRepository cartItemRepository;
     private final WishlistItemRepository wishlistItemRepository;
     private final OrderItemRepository orderItemRepository;
+    private final ReviewRepository reviewRepository;
 
     public ProductService(ProductRepository pr, CategoryRepository cr, StoreRepository sr,
-                          CartItemRepository ci, WishlistItemRepository wi, OrderItemRepository oi) {
+                          CartItemRepository ci, WishlistItemRepository wi, OrderItemRepository oi,
+                          ReviewRepository rr) {
         this.productRepository = pr;
         this.categoryRepository = cr;
         this.storeRepository = sr;
         this.cartItemRepository = ci;
         this.wishlistItemRepository = wi;
         this.orderItemRepository = oi;
+        this.reviewRepository = rr;
     }
 
     public Page<ProductResponse> getAllProducts(Pageable p) { return productRepository.findAll(p).map(ProductResponse::fromEntity); }
@@ -65,12 +69,24 @@ public class ProductService {
     @Transactional
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) throw new ResourceNotFoundException("Product","id",id);
-        // Remove FK references before deleting the product
         cartItemRepository.deleteByProductId(id);
         wishlistItemRepository.deleteByProductId(id);
-        // Null out order item references (preserve order history, just detach product)
+        reviewRepository.deleteByProductId(id);
         orderItemRepository.findByProductId(id).forEach(item -> item.setProduct(null));
         orderItemRepository.flush();
         productRepository.deleteById(id);
+    }
+
+    @Transactional
+    public ProductResponse createProductForStore(ProductRequest req, Long ownerId) {
+        List<com.datapulse.ecommerce.entity.Store> stores = storeRepository.findByOwnerId(ownerId);
+        if (stores.isEmpty()) throw new ResourceNotFoundException("Store", "ownerId", ownerId);
+        Product p = Product.builder().name(req.getName()).description(req.getDescription()).sku(req.getSku())
+                .price(req.getPrice()).stock(req.getStock()).imageUrl(req.getImageUrl())
+                .store(stores.get(0)).build();
+        if (req.getCategoryId() != null) p.setCategory(categoryRepository.findById(req.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "id", req.getCategoryId())));
+        productRepository.save(p);
+        return ProductResponse.fromEntity(p);
     }
 }

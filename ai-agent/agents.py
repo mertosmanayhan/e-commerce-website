@@ -115,6 +115,13 @@ _INJECTION_PATTERNS = [
     r"jailbreak",
     r"developer\s+mode",
     r"sudo\s+",
+    # AV-01: System/role override via bracket or colon syntax
+    r"\[\s*system\s*(override|prompt|instruction|command|message)\s*\]",
+    r"system\s+override",
+    r"user\s+role\s*[=:]\s*(admin|corporate|root|superuser)",
+    r"role\s*(override|=|:)\s*(admin|corporate|root|superuser)",
+    r"disregard\s+(prior|previous|all|above)\s+(role|constraint|instruction|rule)",
+    r"ignore\s+(role|constraint|restriction|rule)\s+(constraint|filter|check)?",
     # System prompt extraction (AV-07)
     r"repeat\s+(your|the)\s+system\s+prompt",
     r"what\s+(were\s+you|are\s+your)\s+(instructions?|rules?|prompt)",
@@ -367,6 +374,11 @@ _CORP_PLATFORM_KW = {
     "tüm mağaza", "bütün mağaza", "diğer mağaza", "platform geneli",
     "tüm platform", "bütün platform", "site geneli", "tüm satış",
     "bütün satış",
+    # English equivalents
+    "all stores", "all registered stores", "across all stores",
+    "across stores", "every store", "all shops", "platform-wide",
+    "all sales", "all registered", "breakdown of sales across",
+    "sales across all", "all store sales", "registered stores",
 }
 
 # ── INDIVIDUAL veri sızıntısı engeli ──────────────────────────────────────────
@@ -541,6 +553,19 @@ def guardrails_node(state: AgentState) -> AgentState:
             "• \"Mağazamın aylık gelir trendi\""
         )
         return state
+
+    # ── AV-02: CORPORATE — başka store ID'si doğrudan soruda geçiyor mu? ─────
+    if role == "CORPORATE" and store_id:
+        mentioned_ids = re.findall(r"store(?:\s+id)?\s*[:#=]?\s*(\d+)", q, re.IGNORECASE)
+        for mid in mentioned_ids:
+            if int(mid) != int(store_id):
+                logger.warning(f"AV-02 cross-store in question — own={store_id} requested={mid}")
+                state["is_in_scope"] = False
+                state["final_answer"] = (
+                    "Güvenlik: Başka bir mağazanın verilerine erişim yetkiniz yok.\n\n"
+                    "Yalnızca kendi mağazanızın verilerini sorgulayabilirsiniz."
+                )
+                return state
 
     # ── LLM kapsam denetimi ──────────────────────────────────────────────────
     if USE_LLM:
@@ -832,6 +857,17 @@ def sql_executor_node(state: AgentState) -> AgentState:
                 "• \"Mağazamın aylık gelir trendi\""
             )
             return state
+        # AV-02: SQL'deki tüm sayısal store_id değerlerini çıkar; kendi ID'si dışında bir değer varsa blokla
+        store_id_refs = re.findall(r"store_id\s*=\s*(\d+)", sql_clean, re.IGNORECASE)
+        for ref in store_id_refs:
+            if int(ref) != int(store_id):
+                logger.warning(f"AV-02 cross-store access attempt — own={store_id} requested={ref}. SQL: {sql[:200]}")
+                state["error"]        = "security_violation"
+                state["final_answer"] = (
+                    "Güvenlik: Başka bir mağazanın verilerine erişim yetkiniz yok.\n\n"
+                    "Yalnızca kendi mağazanızın verilerini sorgulayabilirsiniz."
+                )
+                return state
 
     if role == "INDIVIDUAL" and user_id:
         if f"{user_id}" not in sql_up and "USER_ID" not in sql_up:
